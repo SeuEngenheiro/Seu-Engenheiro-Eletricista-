@@ -1,48 +1,43 @@
+import { verificarOuCriarUsuario, verificarLimiteCalculos, registrarCalculo, registrarConversa } from '../lib/supabase.js';
 import { chamarClaude } from '../lib/claude.js';
-import { loadHistory, saveMessage } from '../lib/supabase.js';
-import { sendText, parseIncoming } from '../lib/zapi.js';
+import { enviarMensagem } from '../lib/zapi.js';
 
 export default async function handler(req, res) {
-  if (req.method === 'GET') {
-    return res.status(200).json({ ok: true, service: 'engenheiro-ai' });
-  }
-
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
-  const secret = process.env.WEBHOOK_SECRET;
-  if (secret && req.query.secret !== secret) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-
-  const incoming = parseIncoming(req.body);
-  if (!incoming) {
-    return res.status(200).json({ ignored: true });
-  }
-
-  const { phone, text } = incoming;
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    await saveMessage(phone, 'user', text);
+    const body = req.body;
+    if (body.fromMe) return res.status(200).json({ ok: true });
+    if (body.isGroup) return res.status(200).json({ ok: true });
 
-    const history = await loadHistory(phone);
-    const { text: reply } = await askClaude(history);
+    const telefone = body.phone?.replace(/\D/g, '');
+    const mensagem = body.text?.message || body.caption || '';
+    const nome = body.senderName || 'Usuário';
 
-    await saveMessage(phone, 'assistant', reply);
-    await sendText(phone, reply);
+    if (!telefone || !mensagem) return res.status(200).json({ ok: true });
+
+    const usuario = await verificarOuCriarUsuario(telefone, nome);
+    await registrarConversa(telefone, mensagem, 'usuario');
+
+    const limite = await verificarLimiteCalculos(telefone);
+    if (!limite.permitido) {
+      const msgLimite = `⚠️ Você atingiu o limite de *3 cálculos diários* do plano grátis.\n\n🚀 Cálculos ilimitados no plano PRO/PREMIUM\n👉 Digite ASSINAR para liberar agora`;
+      await enviarMensagem(telefone, msgLimite);
+      return res.status(200).json({ ok: true });
+    }
+
+    const resposta = await chamarClaude(telefone, mensagem, usuario.plano);
+
+    const ehCalculo = /calcul|corrente|disjuntor|cabo|motor|chuveiro|queda|transformador|ohm|potência/i.test(mensagem);
+    if (ehCalculo) await registrarCalculo(telefone, 'geral', { mensagem }, { resposta });
+
+    await registrarConversa(telefone, resposta, 'agente');
+    await enviarMensagem(telefone, resposta);
 
     return res.status(200).json({ ok: true });
+
   } catch (err) {
-    console.error('webhook error', err);
-    try {
-      await sendText(
-        phone,
-        'Tive um problema técnico aqui do meu lado. Pode tentar de novo em instantes?',
-      );
-    } catch {
-      /* swallow */
-    }
-    return res.status(500).json({ error: 'internal_error' });
+    console.error('erro do webhook', err);
+    return res.status(500).json({ error: err.message });
   }
 }
