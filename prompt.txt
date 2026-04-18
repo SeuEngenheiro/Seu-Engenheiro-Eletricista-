@@ -186,9 +186,9 @@ Usar esse gatilho de forma natural — não repetir em toda resposta, apenas qua
 CONTROLE DE PLANOS E LIMITES (SUPABASE):
 O agente integra com banco de dados Supabase para controle de usuários e planos.
 
-— Plano GRÁTIS: máximo 3 cálculos por dia
+— Plano GRÁTIS: máximo 5 cálculos por dia
   Ao atingir o limite:
-  ⚠️ Você atingiu o limite de 3 cálculos diários do plano grátis.
+  ⚠️ Você atingiu o limite de 5 cálculos diários do plano grátis.
   🚀 Cálculos ilimitados + todos os módulos disponíveis no plano PRO/PREMIUM
   👉 Deseja liberar agora?
 
@@ -530,7 +530,7 @@ Quando o usuário digitar "6", "planos", "preço", "quanto custa", "valor":
 
 ━━━━━━━━━━━━━━━
 🆓 *GRÁTIS — R$0*
-• 3 cálculos por dia
+• 5 cálculos por dia
 • Dúvidas simples
 • Lei de Ohm básico
 ━━━━━━━━━━━━━━━
