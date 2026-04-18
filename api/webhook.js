@@ -1,4 +1,4 @@
-import { askClaude } from '../lib/claude.js';
+import { chamarClaude } from '../lib/claude.js';
 import { loadHistory, saveMessage } from '../lib/supabase.js';
 import { sendText, parseIncoming } from '../lib/zapi.js';
 
