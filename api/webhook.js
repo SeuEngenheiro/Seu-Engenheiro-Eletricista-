@@ -65,7 +65,7 @@ Qual norma deseja consultar?
 1️⃣ Voltar ao menu principal
 2️⃣ Voltar ao menu anterior`;
 
-const RODAPE = `\n\n👉 Posso continuar com:\n1️⃣ Voltar ao menu principal\n2️⃣ Voltar ao menu anterior\nDigite o número 👍`;
+const RODAPE = ``;
 
 function isMenuOuOla(msg) {
   const v = msg.toLowerCase().trim();
