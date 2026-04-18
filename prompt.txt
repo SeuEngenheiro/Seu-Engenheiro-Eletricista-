@@ -576,7 +576,7 @@ Quando o usuário digitar "6", "planos", "preço", "quanto custa", "valor":
 ━━━━━━━━━━━━━━━
 🆓 *GRÁTIS — R$0*
 • 5 cálculos por dia
-• Dúvidas técnicas ilimitadas
+• Dúvidas técnicas limitadas
 • Normas técnicas (consulta básica)
 • Acesso 24h via WhatsApp
 ━━━━━━━━━━━━━━━
