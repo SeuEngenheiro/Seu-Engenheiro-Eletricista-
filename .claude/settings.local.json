@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(claude-api)",
+      "Bash(git -C \"C:/Users/agcor/Desktop/engenheiro-ai\" status)",
+      "Bash(git -C \"C:/Users/agcor/Desktop/engenheiro-ai\" remote -v)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(git config *)"
+    ]
+  }
+}
