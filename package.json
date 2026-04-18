@@ -1,18 +1,17 @@
 {
-  "name": "engenheiro-ai",
+  "name": "engenheiro-eletricista-ai",
   "version": "1.0.0",
-  "description": "Assistente de Engenharia Elétrica via WhatsApp (Z-API + Claude + Supabase)",
-  "main": "api/webhook.js",
+  "description": "Agente Engenheiro Eletricista AI para WhatsApp",
   "type": "module",
   "scripts": {
     "dev": "vercel dev",
     "deploy": "vercel --prod"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.40.0",
-    "@supabase/supabase-js": "^2.45.0"
+    "openai": "^4.47.0",
+    "@supabase/supabase-js": "^2.39.0"
   },
-  "engines": {
-    "node": ">=20"
+  "devDependencies": {
+    "vercel": "^34.0.0"
   }
 }
