@@ -4,7 +4,7 @@ import { enviarMensagem } from '../lib/zapi.js';
 
 // Controle de boas-vindas (não repetir na mesma sessão)
 const boasVindasEnviadas = new Map();
-const TEMPO_SESSAO = 8 * 60 * 60 * 1000; // 8 horas
+const TEMPO_SESSAO = 1 * 60 * 1000; // 8 horas
 
 function jaEnviouBoasVindas(telefone) {
   const ts = boasVindasEnviadas.get(telefone);
