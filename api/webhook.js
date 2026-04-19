@@ -103,10 +103,46 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true });
     }
 
+    // ═══ PLANOS — responder a qualquer momento ═══
+    const perguntaPlano = /plano|pro|premium|diferença|diferenca|assinar|upgrade|preço|preco|quanto custa|valor|contratar/i.test(msg);
+    if (perguntaPlano) {
+      const msgPlanos = `💳 *Planos Engenheiro Eletricista AI*
+
+━━━━━━━━━━━━━━━
+🆓 *GRÁTIS — R$0*
+• 5 cálculos por dia
+• Dúvidas técnicas ilimitadas
+• Consulta básica de normas
+• Acesso 24h via WhatsApp
+
+━━━━━━━━━━━━━━━
+⚡ *PRO — R$19,90/mês*
+• Cálculos ilimitados
+• Dimensionamento completo
+• Diagnóstico automático
+• Normas técnicas completas
+• IA técnica 24h
+👉 https://pay.kiwify.com.br/3klvFH6
+
+━━━━━━━━━━━━━━━
+👑 *PREMIUM — R$39,90/mês*
+• Tudo do PRO
+• Lista de materiais com preços
+• Projeto elétrico detalhado
+• Histórico completo
+• Suporte com especialista
+• Garantia 7 dias 🔒
+👉 https://pay.kiwify.com.br/9SShnKM
+━━━━━━━━━━━━━━━`;
+      await enviarMensagem(telefone, msgPlanos);
+      await registrarConversa(telefone, msgPlanos, 'agente');
+      return res.status(200).json({ ok: true });
+    }
+
     // ═══ VERIFICAR LIMITE ═══
     const limite = await verificarLimiteCalculos(telefone);
     if (!limite.permitido) {
-      const msgLimite = `Você atingiu o limite de *5 cálculos diários* do plano grátis.\n\n🚀 Assine o PRO e calcule sem limites!\n👉 https://pay.kiwify.com.br/3klvFH6`;
+      const msgLimite = `⚠️ Você atingiu o limite de *5 cálculos diários* do plano grátis.\n\n🚀 Quer calcular sem limites? Escolha seu plano:\n\n⚡ *PRO — R$19,90/mês*\nCálculos ilimitados + diagnóstico + normas completas\n👉 https://pay.kiwify.com.br/3klvFH6\n\n👑 *PREMIUM — R$39,90/mês*\nTudo do PRO + projetos + materiais + suporte especialista\n👉 https://pay.kiwify.com.br/9SShnKM`;
       await enviarMensagem(telefone, msgLimite);
       await registrarConversa(telefone, msgLimite, 'agente');
       return res.status(200).json({ ok: true });
