@@ -599,23 +599,31 @@ Quando o usuário digitar "6", "planos", "preço", "quanto custa", "valor":
 
 ━━━━━━━━━━━━━━━
 🆓 *GRÁTIS — R$0*
-• 5 cálculos por dia
-• Dúvidas técnicas ilimitadas
-• Normas técnicas (consulta básica)
+🔢 Até 5 cálculos elétricos por dia
+💬 Dúvidas técnicas ilimitadas (respostas rápidas)
+📘 Consulta básica de normas (ex: NR-10)
+⚡ Recomendações simples de elétrica
+📲 Acesso via WhatsApp 24h
+
 ━━━━━━━━━━━━━━━
 ⚡ *PRO — R$19,90/mês*
-• Cálculos ilimitados
-• Todos os módulos técnicos
-• NBR 5410 e NR-10 completas
-• IA técnica 24h
-🚀 +1.000 cálculos realizados por profissionais
-💡 Economia de tempo e mais precisão nos projetos
+🔢 Cálculos elétricos ilimitados
+⚙️ Dimensionamento rápido (cabos, disjuntores, circuitos)
+🧠 Diagnóstico automático de problemas elétricos
+🔄 Conversões elétricas completas
+📘 Interpretação prática de normas )
+🤖 IA técnica disponível 24/7
+
 ━━━━━━━━━━━━━━━
 👑 *PREMIUM — R$39,90/mês*
-• Tudo do Pro
-• Lista de material com preços estimados
-• Dimensionamento completo
-• Suporte direto com engenheiro
+✅ Tudo do plano PRO
+📋 Lista de materiais (com quantitativo e custo estimado)
+📐 Projeto elétrico detalhado (nível execução)
+🧾 Memória de cálculo organizada
+📊 Histórico completo de atendimentos e projetos
+⚡ Prioridade máxima nas respostas
+👨‍💼 Suporte com especialista 
+
 ━━━━━━━━━━━━━━━
 
 Para assinar: responda PRO ou PREMIUM
