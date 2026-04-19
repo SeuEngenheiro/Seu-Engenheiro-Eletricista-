@@ -41,7 +41,7 @@ export default async function handler(req, res) {
     const msg = mensagem.toLowerCase().trim();
 
     // ═══ BOAS-VINDAS POR PLANO ═══
-    if (isOla(mensagem) || !jaEnviouBoasVindas(telefone)) {
+    if (isOla(mensagem)) {
       marcarBoasVindas(telefone);
       const plano = usuario?.plano || 'gratis';
 
@@ -56,7 +56,7 @@ export default async function handler(req, res) {
 
       } else {
         // Grátis / novo usuário
-        const texto = `🆓 *5 cálculos grátis/dia*\n\n⚡ IA ESPECIALIZADA EM ELÉTRICA\n \n🏅 Desenvolvida por Engenheiro (CREA)\n \n⚠️ Não substitui projeto técnico com ART quando exigido.\n \n👇 Como posso te ajudar?`;
+        const texto = `🆓 *5 cálculos grátis/dia*\n\n⚡ Oi! Que bom ter você aqui 👷\n\nSou seu engenheiro eletricista no WhatsApp — pode me contar qual é o problema ou dúvida elétrica que você tem hoje!\n\n🚀 Profissional que usa todo dia?\nCálculo ilimitado + diagnóstico + normas completas`;
 
         await enviarMensagem(telefone, texto);
       }
