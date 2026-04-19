@@ -4,7 +4,7 @@ import { enviarMensagem } from '../lib/zapi.js';
 
 // Controle de boas-vindas (não repetir na mesma sessão)
 const boasVindasEnviadas = new Map();
-const TEMPO_SESSAO = 1 * 60 * 1000; // 8 horas
+const TEMPO_SESSAO = 8 * 60 * 60 * 1000; // 8 horas
 
 function jaEnviouBoasVindas(telefone) {
   const ts = boasVindasEnviadas.get(telefone);
@@ -56,9 +56,9 @@ export default async function handler(req, res) {
 
       } else {
         // Grátis / novo usuário
-        const texto = `🆓 *5 cálculos grátis/dia*\n\n⚡ IA ESPECIALIZADA EM ELÉTRICA\n \n🏅 Desenvolvida por Engenheiro (CREA)\n \n⚠️ Não substitui projeto técnico com ART quando exigido.\n \n👇 Como posso te ajudar?\n\n🚀 Digite *planos* para ver os planos e preços`;
+        const texto = `🆓 *5 cálculos grátis/dia*\n\n⚡ Oi! Que bom ter você aqui 👷\n\nSou seu engenheiro eletricista no WhatsApp — pode me contar qual é o problema ou dúvida elétrica que você tem hoje!\n\n🚀 Profissional que usa todo dia?\nCálculo ilimitado + diagnóstico + normas completas`;
 
-        await enviarMensagem(telefone, texto);
+        await enviarMensagem(telefone, texto + `\n\n⚡ PRO: https://pay.kiwify.com.br/3klvFH6\n👑 PREMIUM: https://pay.kiwify.com.br/9SShnKM`);
       }
 
       await registrarConversa(telefone, 'boas-vindas enviadas', 'agente');
@@ -142,7 +142,7 @@ export default async function handler(req, res) {
     // ═══ VERIFICAR LIMITE ═══
     const limite = await verificarLimiteCalculos(telefone);
     if (!limite.permitido) {
-      const msgLimite = `⚠️ Você atingiu o limite de *5 cálculos diários* do plano grátis.\n\n🚀 Quer calcular sem limites? Escolha seu plano:\n\n⚡ *PRO — R$19,90/mês*\nCálculos ilimitados + diagnóstico + normas completas\n👉 https://pay.kiwify.com.br/3klvFH6\n\n👑 *PREMIUM — R$39,90/mês*\nTudo do PRO + projetos + materiais + suporte especialista\n👉 https://pay.kiwify.com.br/9SShnKM`;
+      const msgLimite = `⚠️ Você atingiu o limite de *5 cálculos diários* do plano gratuito.\n\n Para continuar calculando sem limites, conheça nossos planos:\n\n━━━━━━━━━━━━━━━\n⚡ *PRO — R$19,90/mês*\nIdeal para eletricistas que usam todo dia\n• Cálculos ilimitados\n• Dimensionamento completo\n• Diagnóstico automático\n• Normas técnicas completas\n• IA técnica 24h\n👉 https://pay.kiwify.com.br/3klvFH6\n\n━━━━━━━━━━━━━━━\n👑 *PREMIUM — R$39,90/mês*\nNível engenheiro completo\n• Tudo do PRO\n• Lista de materiais com preços\n• Projeto elétrico detalhado\n• Histórico completo\n• Suporte com especialista\n• Garantia 7 dias 🔒\n👉 https://pay.kiwify.com.br/9SShnKM\n━━━━━━━━━━━━━━━`;
       await enviarMensagem(telefone, msgLimite);
       await registrarConversa(telefone, msgLimite, 'agente');
       return res.status(200).json({ ok: true });
