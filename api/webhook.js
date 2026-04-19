@@ -56,7 +56,7 @@ export default async function handler(req, res) {
 
       } else {
         // Grátis / novo usuário
-        const texto = `🆓 *5 cálculos grátis/dia*\n\n⚡ IA especializada em elétrica 👷\nCriada por engenheiro eletricista (CREA)\nResolvo dúvidas e problemas na instalação.\n👇 Como posso te ajudar?\n━━━━━━━━━━━━━━━\n⚠️ Orientações técnicas — não substituem projeto com ART quando exigido.\n\n🚀 Digite *planos* para ver os planos e preços`;
+        const texto = `🆓 *5 cálculos grátis/dia*\n\n⚡ IA ESPECIALIZADA EM ELÉTRICA\n \n🏅 Desenvolvida por Engenheiro (CREA)\n \n⚠️ Não substitui projeto técnico com ART quando exigido.\n \n👇 Como posso te ajudar?\n\n🚀 Digite *planos* para ver os planos e preços`;
 
         await enviarMensagem(telefone, texto);
       }
