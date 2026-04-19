@@ -4,6 +4,7 @@ import { enviarMensagem } from '../lib/zapi.js';
 
 // Controle de boas-vindas (não repetir na mesma sessão)
 const boasVindasEnviadas = new Map();
+const mensagensProcessadas = new Map();
 const TEMPO_SESSAO = 8 * 60 * 60 * 1000; // 8 horas
 
 function jaEnviouBoasVindas(telefone) {
@@ -34,6 +35,11 @@ export default async function handler(req, res) {
     const nome = body.senderName || 'Usuário';
 
     if (!telefone || !mensagem) return res.status(200).json({ ok: true });
+
+    const msgId = body.messageId || body.id || `${telefone}-${Date.now()}`;
+    if (mensagensProcessadas.has(msgId)) return res.status(200).json({ ok: true });
+    mensagensProcessadas.set(msgId, true);
+    setTimeout(() => mensagensProcessadas.delete(msgId), 60000);
 
     const usuario = await verificarOuCriarUsuario(telefone, nome);
     await registrarConversa(telefone, mensagem, 'usuario');
