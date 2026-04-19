@@ -35,6 +35,11 @@ export default async function handler(req, res) {
 
     if (!telefone || !mensagem) return res.status(200).json({ ok: true });
 
+   const msgId = `${telefone}-${mensagem.slice(0,20)}-${Math.floor(Date.now()/3000)}`;
+    if (mensagensProcessadas.has(msgId)) return res.status(200).json({ ok: true });
+    mensagensProcessadas.set(msgId, true);
+    setTimeout(() => mensagensProcessadas.delete(msgId), 10000);
+
     const usuario = await verificarOuCriarUsuario(telefone, nome);
     await registrarConversa(telefone, mensagem, 'usuario');
 
