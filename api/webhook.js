@@ -1,6 +1,25 @@
 import { verificarOuCriarUsuario, verificarLimiteCalculos, registrarCalculo, registrarConversa, buscarHistorico } from '../lib/supabase.js';
 import { chamarClaude } from '../lib/claude.js';
-import { enviarMensagem } from '../lib/zapi.js';
+import { enviarMensagem, enviarBotoes } from '../lib/zapi.js';
+
+// Controle de boas-vindas (não repetir na mesma sessão)
+const boasVindasEnviadas = new Map();
+const TEMPO_SESSAO = 8 * 60 * 60 * 1000; // 8 horas
+
+function jaEnviouBoasVindas(telefone) {
+  const ts = boasVindasEnviadas.get(telefone);
+  if (!ts || Date.now() - ts > TEMPO_SESSAO) return false;
+  return true;
+}
+
+function marcarBoasVindas(telefone) {
+  boasVindasEnviadas.set(telefone, Date.now());
+}
+
+function isOla(msg) {
+  const v = msg.toLowerCase().trim();
+  return ['oi','olá','ola','oi!','olá!','menu','inicio','início','começar','comecar','start','bom dia','boa tarde','boa noite'].includes(v);
+}
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -21,11 +40,65 @@ export default async function handler(req, res) {
 
     const msg = mensagem.toLowerCase().trim();
 
-    // Comando histórico
+    // ═══ BOAS-VINDAS POR PLANO ═══
+    if (isOla(mensagem) || !jaEnviouBoasVindas(telefone)) {
+      marcarBoasVindas(telefone);
+      const plano = usuario?.plano || 'gratis';
+
+      if (plano === 'premium') {
+        const texto = `👑 *PREMIUM — nível engenheiro*\n\nOi! Ótimo ter você aqui 👷\n\nVocê tem o melhor plano disponível. Me manda qualquer dúvida — cálculo, projeto, material ou suporte especializado!\n\n✓ Tudo liberado · ✓ Sem limites · ✓ Suporte humano\n\n✅ Acesso total liberado — sem limites!`;
+        await enviarMensagem(telefone, texto);
+
+      } else if (plano === 'pro') {
+        const texto = `⚡ *PRO ativo — ilimitado*\n\nOi! Que bom que você está aqui 👷\n\nPode mandar sua dúvida — cálculos ilimitados, diagnóstico e normas completas!\n\n💡 Quer o pacote completo com projeto detalhado, materiais e suporte humano?\n\n👑 PREMIUM por R$39,90/mês\n👉 https://pay.kiwify.com.br/9SShnKM`;
+
+        try {
+          await enviarBotoes(telefone, texto, [
+            { id: 'upgrade_premium', text: '👑 Upgrade para PREMIUM' }
+          ]);
+        } catch {
+          await enviarMensagem(telefone, texto);
+        }
+
+      } else {
+        // Grátis / novo usuário
+        const texto = `🆓 *5 cálculos grátis/dia*\n\n⚡ Oi! Que bom ter você aqui 👷\n\nSou seu engenheiro eletricista no WhatsApp — pode me contar qual é o problema ou dúvida elétrica que você tem hoje!\n\n🚀 Profissional que usa todo dia?\nCálculo ilimitado + diagnóstico + normas completas`;
+
+        try {
+          await enviarBotoes(telefone, texto, [
+            { id: 'assinar_pro', text: '⚡ PRO — R$19,90/mês' },
+            { id: 'assinar_premium', text: '👑 PREMIUM — R$39,90/mês' },
+            { id: 'continuar_gratis', text: 'Continuar grátis' }
+          ]);
+        } catch {
+          await enviarMensagem(telefone, texto + `\n\n⚡ PRO: https://pay.kiwify.com.br/3klvFH6\n👑 PREMIUM: https://pay.kiwify.com.br/9SShnKM`);
+        }
+      }
+
+      await registrarConversa(telefone, 'boas-vindas enviadas', 'agente');
+      if (isOla(mensagem)) return res.status(200).json({ ok: true });
+    }
+
+    // ═══ BOTÕES CLICADOS ═══
+    const buttonId = body.buttonResponseMessage?.selectedButtonId || body.listResponseMessage?.singleSelectReply?.selectedRowId;
+
+    if (buttonId === 'assinar_pro') {
+      await enviarMensagem(telefone, `⚡ Ótimo! Acesse o link para assinar o *Plano PRO*:\n👉 https://pay.kiwify.com.br/3klvFH6\n\nPIX, cartão ou boleto · Acesso imediato ✅\nGarantia de 7 dias 🔒`);
+      return res.status(200).json({ ok: true });
+    }
+    if (buttonId === 'assinar_premium' || buttonId === 'upgrade_premium') {
+      await enviarMensagem(telefone, `👑 Ótimo! Acesse o link para assinar o *Plano PREMIUM*:\n👉 https://pay.kiwify.com.br/9SShnKM\n\nPIX, cartão ou boleto · Acesso imediato ✅\nGarantia de 7 dias 🔒`);
+      return res.status(200).json({ ok: true });
+    }
+    if (buttonId === 'continuar_gratis') {
+      await enviarMensagem(telefone, `Perfeito! Me manda sua dúvida elétrica 😊`);
+      return res.status(200).json({ ok: true });
+    }
+
+    // ═══ COMANDO HISTÓRICO ═══
     if (msg === 'histórico' || msg === 'historico' || msg === 'meus cálculos' || msg === 'meus calculos') {
-      if (usuario.plano === 'gratis') {
-        const resp = `Histórico de cálculos está disponível nos planos PRO e PREMIUM.\n\n🚀 https://pay.kiwify.com.br/3klvFH6`;
-        await enviarMensagem(telefone, resp);
+      if (usuario.plano === 'gratis' || usuario.plano === 'pro') {
+        await enviarMensagem(telefone, `Histórico de cálculos está disponível no plano *PREMIUM*.\n\n👑 https://pay.kiwify.com.br/9SShnKM`);
         return res.status(200).json({ ok: true });
       }
       const historico = await buscarHistorico(telefone, 10);
@@ -33,7 +106,7 @@ export default async function handler(req, res) {
         await enviarMensagem(telefone, `Você ainda não realizou nenhum cálculo. Me manda sua dúvida! 😊`);
         return res.status(200).json({ ok: true });
       }
-      let resp = `📋 Seus últimos ${historico.length} cálculos:\n\n`;
+      let resp = `📋 *Seus últimos ${historico.length} cálculos:*\n\n`;
       historico.forEach((c, i) => {
         const data = new Date(c.realizado_em).toLocaleDateString('pt-BR');
         const hora = new Date(c.realizado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
@@ -44,7 +117,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true });
     }
 
-    // Verificar limite de cálculos
+    // ═══ VERIFICAR LIMITE ═══
     const limite = await verificarLimiteCalculos(telefone);
     if (!limite.permitido) {
       const msgLimite = `Você atingiu o limite de *5 cálculos diários* do plano grátis.\n\n🚀 Assine o PRO e calcule sem limites!\n👉 https://pay.kiwify.com.br/3klvFH6`;
@@ -53,7 +126,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true });
     }
 
-    // IA responde tudo naturalmente
+    // ═══ IA RESPONDE ═══
     const resposta = await chamarClaude(telefone, mensagem, usuario.plano);
 
     const ehCalculo = /calcul|corrente|disjuntor|cabo|motor|chuveiro|queda|transformador|ohm|potência/i.test(mensagem);
