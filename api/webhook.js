@@ -56,7 +56,7 @@ export default async function handler(req, res) {
 
       } else {
         // Grátis / novo usuário
-        const texto = `🆓 *5 cálculos grátis/dia*\n\n⚡ Oi! Que bom ter você aqui 👷\n\nSou seu engenheiro eletricista no WhatsApp — pode me contar qual é o problema ou dúvida elétrica que você tem hoje!\n\n🚀 Profissional que usa todo dia?\nCálculo ilimitado + diagnóstico + normas completas`;
+        const texto = `🆓 *5 cálculos grátis/dia*\n\n⚡ IA ESPECIALIZADA EM ELÉTRICA\n \n🏅 Desenvolvida por Engenheiro (CREA)\n \n⚠️ Não substitui projeto técnico com ART quando exigido.\n \n👇 Como posso te ajudar?`;
 
         await enviarMensagem(telefone, texto + `\n\n⚡ PRO: https://pay.kiwify.com.br/3klvFH6\n👑 PREMIUM: https://pay.kiwify.com.br/9SShnKM`);
       }
