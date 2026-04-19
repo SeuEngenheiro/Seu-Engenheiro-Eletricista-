@@ -1,10 +1,9 @@
-import { verificarOuCriarUsuario, verificarLimiteCalculos, registrarCalculo, registrarConversa, buscarHistorico } from '../lib/supabase.js';
+import { verificarOuCriarUsuario, verificarLimiteCalculos, verificarLimitePerguntas, registrarCalculo, registrarConversa, buscarHistorico } from '../lib/supabase.js';
 import { chamarClaude } from '../lib/claude.js';
 import { enviarMensagem } from '../lib/zapi.js';
 
 // Controle de boas-vindas (não repetir na mesma sessão)
 const boasVindasEnviadas = new Map();
-const mensagensProcessadas = new Map();
 const TEMPO_SESSAO = 8 * 60 * 60 * 1000; // 8 horas
 
 function jaEnviouBoasVindas(telefone) {
@@ -36,11 +35,6 @@ export default async function handler(req, res) {
 
     if (!telefone || !mensagem) return res.status(200).json({ ok: true });
 
-   const msgId = `${telefone}-${mensagem.slice(0,20)}-${Math.floor(Date.now()/3000)}`;
-    if (mensagensProcessadas.has(msgId)) return res.status(200).json({ ok: true });
-    mensagensProcessadas.set(msgId, true);
-    setTimeout(() => mensagensProcessadas.delete(msgId), 10000);
-
     const usuario = await verificarOuCriarUsuario(telefone, nome);
     await registrarConversa(telefone, mensagem, 'usuario');
 
@@ -62,7 +56,7 @@ export default async function handler(req, res) {
 
       } else {
         // Grátis / novo usuário
-        const texto = `🆓 *5 cálculos grátis/dia*\n\n⚡ IA ESPECIALIZADA EM ELÉTRICA\n \n🏅 Desenvolvida por Engenheiro (CREA)\n \n⚠️ Não substitui projeto técnico com ART quando exigido.\n \n👇 Como posso te ajudar?`;
+        const texto = `🆓 *5 cálculos grátis/dia*\n\n⚡ Oi! Que bom ter você aqui 👷\n\nSou seu engenheiro eletricista no WhatsApp — pode me contar qual é o problema ou dúvida elétrica que você tem hoje!\n\n🚀 Profissional que usa todo dia?\nCálculo ilimitado + diagnóstico + normas completas`;
 
         await enviarMensagem(telefone, texto);
       }
@@ -152,6 +146,41 @@ export default async function handler(req, res) {
       await enviarMensagem(telefone, msgLimite);
       await registrarConversa(telefone, msgLimite, 'agente');
       return res.status(200).json({ ok: true });
+    }
+
+    // ═══ VERIFICAR LIMITE DE PERGUNTAS ═══
+    const ehNorma = /nbr 5410|nbr5410/i.test(msg);
+    const ehOutraNorma = /nr-10|nr10|nbr 5419|nbr5419|nbr 5413|nbr5413|nbr 14039|abnt/i.test(msg) && !ehNorma;
+    
+    if (ehOutraNorma && usuario.plano === 'gratis') {
+      const msgNorma = `⚠️ Consulta a outras normas está disponível nos planos *PRO* e *PREMIUM*.
+
+No plano grátis você tem acesso à *NBR 5410*.
+
+⚡ PRO: https://pay.kiwify.com.br/3klvFH6
+👑 PREMIUM: https://pay.kiwify.com.br/9SShnKM`;
+      await enviarMensagem(telefone, msgNorma);
+      await registrarConversa(telefone, msgNorma, 'agente');
+      return res.status(200).json({ ok: true });
+    }
+
+    const ehPerguntaTecnica = !/(calcul|corrente|disjuntor|cabo|motor|chuveiro|queda|transformador|ohm|potência)/i.test(mensagem);
+    if (ehPerguntaTecnica && usuario.plano === 'gratis') {
+      const limitePerguntas = await verificarLimitePerguntas(telefone);
+      if (!limitePerguntas.permitido) {
+        const msgLimite = `⚠️ Você atingiu o limite de *5 perguntas técnicas diárias* do plano gratuito.
+
+Para continuar sem limites, conheça nossos planos:
+
+⚡ *PRO — R$19,90/mês*
+👉 https://pay.kiwify.com.br/3klvFH6
+
+👑 *PREMIUM — R$39,90/mês*
+👉 https://pay.kiwify.com.br/9SShnKM`;
+        await enviarMensagem(telefone, msgLimite);
+        await registrarConversa(telefone, msgLimite, 'agente');
+        return res.status(200).json({ ok: true });
+      }
     }
 
     // ═══ IA RESPONDE ═══
