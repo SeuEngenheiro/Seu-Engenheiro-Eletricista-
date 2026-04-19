@@ -1,6 +1,6 @@
 import { verificarOuCriarUsuario, verificarLimiteCalculos, registrarCalculo, registrarConversa, buscarHistorico } from '../lib/supabase.js';
 import { chamarClaude } from '../lib/claude.js';
-import { enviarMensagem, enviarBotoes } from '../lib/zapi.js';
+import { enviarMensagem } from '../lib/zapi.js';
 
 // Controle de boas-vindas (não repetir na mesma sessão)
 const boasVindasEnviadas = new Map();
@@ -52,27 +52,13 @@ export default async function handler(req, res) {
       } else if (plano === 'pro') {
         const texto = `⚡ *PRO ativo — ilimitado*\n\nOi! Que bom que você está aqui 👷\n\nPode mandar sua dúvida — cálculos ilimitados, diagnóstico e normas completas!\n\n💡 Quer o pacote completo com projeto detalhado, materiais e suporte humano?\n\n👑 PREMIUM por R$39,90/mês\n👉 https://pay.kiwify.com.br/9SShnKM`;
 
-        try {
-          await enviarBotoes(telefone, texto, [
-            { id: 'upgrade_premium', text: '👑 Upgrade para PREMIUM' }
-          ]);
-        } catch {
-          await enviarMensagem(telefone, texto);
-        }
+        await enviarMensagem(telefone, texto);
 
       } else {
         // Grátis / novo usuário
         const texto = `🆓 *5 cálculos grátis/dia*\n\n⚡ Oi! Que bom ter você aqui 👷\n\nSou seu engenheiro eletricista no WhatsApp — pode me contar qual é o problema ou dúvida elétrica que você tem hoje!\n\n🚀 Profissional que usa todo dia?\nCálculo ilimitado + diagnóstico + normas completas`;
 
-        try {
-          await enviarBotoes(telefone, texto, [
-            { id: 'assinar_pro', text: '⚡ PRO — R$19,90/mês' },
-            { id: 'assinar_premium', text: '👑 PREMIUM — R$39,90/mês' },
-            { id: 'continuar_gratis', text: 'Continuar grátis' }
-          ]);
-        } catch {
-          await enviarMensagem(telefone, texto + `\n\n⚡ PRO: https://pay.kiwify.com.br/3klvFH6\n👑 PREMIUM: https://pay.kiwify.com.br/9SShnKM`);
-        }
+        await enviarMensagem(telefone, texto + `\n\n⚡ PRO: https://pay.kiwify.com.br/3klvFH6\n👑 PREMIUM: https://pay.kiwify.com.br/9SShnKM`);
       }
 
       await registrarConversa(telefone, 'boas-vindas enviadas', 'agente');
