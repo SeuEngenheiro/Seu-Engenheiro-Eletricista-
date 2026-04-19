@@ -41,7 +41,7 @@ export default async function handler(req, res) {
     const msg = mensagem.toLowerCase().trim();
 
     // ═══ BOAS-VINDAS POR PLANO ═══
-    if (isOla(mensagem) || !jaEnviouBoasVindas(telefone)) {
+    if (isOla(mensagem)) {
       marcarBoasVindas(telefone);
       const plano = usuario?.plano || 'gratis';
 
