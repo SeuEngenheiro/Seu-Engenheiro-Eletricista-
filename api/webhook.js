@@ -58,7 +58,7 @@ export default async function handler(req, res) {
         // Grátis / novo usuário
         const texto = `🆓 *5 cálculos grátis/dia*\n\n⚡ Oi! Que bom ter você aqui 👷\n\nSou seu engenheiro eletricista no WhatsApp — pode me contar qual é o problema ou dúvida elétrica que você tem hoje!\n\n🚀 Digite *planos* para ver os planos e preços`;
 
-        await enviarMensagem(telefone, texto + `\n\n⚡ PRO: https://pay.kiwify.com.br/3klvFH6\n👑 PREMIUM: https://pay.kiwify.com.br/9SShnKM`);
+        await enviarMensagem(telefone, texto);
       }
 
       await registrarConversa(telefone, 'boas-vindas enviadas', 'agente');
