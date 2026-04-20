@@ -140,7 +140,7 @@ console.log('[IMAGE FIELD]', JSON.stringify(body.image)?.slice(0,100));
     }
 
     // ═══ PLANOS ═══
-    if (/\b(planos?|assinar|upgrade|preço|preco|quanto custa|contratar|ver planos)\b/i.test(msg)) {
+    if (/\b(planos?|assinar|upgrade|preço|preco|quanto custa|contratar|ver planos|quero assinar)\b/i.test(msg)) {
       await enviarMensagem(telefone, MSG_PLANOS);
       await registrarConversa(telefone, MSG_PLANOS, 'agente');
       return res.status(200).json({ ok: true });
