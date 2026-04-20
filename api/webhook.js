@@ -53,9 +53,6 @@ export default async function handler(req, res) {
     const mensagem = (body.text?.message || body.caption || '').trim();
     const nome = body.senderName || 'Usuário';
     const temImagem = !!(body.image || body.imageMessage);
-    console.log('[BODY KEYS]', Object.keys(body));
-console.log('[TYPE]', body.type);
-console.log('[IMAGE FIELD]', JSON.stringify(body.image)?.slice(0,100));
 
     if (!telefone || (!mensagem && !temImagem)) return res.status(200).json({ ok: true });
 
@@ -73,14 +70,12 @@ console.log('[IMAGE FIELD]', JSON.stringify(body.image)?.slice(0,100));
       const imagemBase64 = body.image?.base64 || body.imageMessage?.base64;
       const mimeType = body.image?.mimeType || 'image/jpeg';
 
-      console.log('[FOTO] plano:', plano, 'tel:', telefone);
       const limFoto = await verificarLimiteFotos(telefone, plano);
-      console.log('[FOTO] limite:', JSON.stringify(limFoto));
       if (!limFoto.permitido) {
         if (plano === 'gratis') {
-          await enviarMensagem(telefone, `📸 Análise de fotos está disponível nos planos *PRO* e *PREMIUM*.\n\n⚡ PRO: https://pay.kiwify.com.br/3klvFH6\n👑 PREMIUM: https://pay.kiwify.com.br/9SShnKM`);
+          await enviarMensagem(telefone, `📸 Análise de fotos disponível nos planos *PRO* e *PREMIUM*.\n\n⚡ PRO: https://pay.kiwify.com.br/3klvFH6\n👑 PREMIUM: https://pay.kiwify.com.br/9SShnKM`);
         } else {
-          await enviarMensagem(telefone, `⚠️ Você atingiu o limite de *20 fotos diárias* do plano PRO.\n\n👑 No PREMIUM as análises são ilimitadas!\n👉 https://pay.kiwify.com.br/9SShnKM`);
+          await enviarMensagem(telefone, `⚠️ Limite de *20 fotos diárias* do plano PRO atingido.\n\n👑 PREMIUM tem fotos ilimitadas!\n👉 https://pay.kiwify.com.br/9SShnKM`);
         }
         return res.status(200).json({ ok: true });
       }
@@ -98,7 +93,7 @@ console.log('[IMAGE FIELD]', JSON.stringify(body.image)?.slice(0,100));
         await enviarMensagem(telefone, resposta);
         return res.status(200).json({ ok: true });
       } catch (err) {
-        await enviarMensagem(telefone, `Não consegui analisar a foto. Tente enviar novamente! 😊`);
+        await enviarMensagem(telefone, `Não consegui analisar a foto. Tente novamente! 😊`);
         return res.status(200).json({ ok: true });
       }
     }
