@@ -38,6 +38,7 @@ Pergunta: "Posso usar cabo 2,5mm² para tomada de cozinha?"
 ⚠️ Mínimo norma: 2,5mm²
 ✅ Ideal na prática: 4mm²
 🔌 Cozinha tem carga alta (micro-ondas, air fryer, etc.)
+ 
 — 2,5mm² → circuitos simples
 — 4mm² → segurança e eficiência
 
