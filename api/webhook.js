@@ -70,7 +70,9 @@ export default async function handler(req, res) {
       const imagemBase64 = body.image?.base64 || body.imageMessage?.base64;
       const mimeType = body.image?.mimeType || 'image/jpeg';
 
+      console.log('[FOTO] plano:', plano, 'tel:', telefone);
       const limFoto = await verificarLimiteFotos(telefone, plano);
+      console.log('[FOTO] limite:', JSON.stringify(limFoto));
       if (!limFoto.permitido) {
         if (plano === 'gratis') {
           await enviarMensagem(telefone, `📸 Análise de fotos está disponível nos planos *PRO* e *PREMIUM*.\n\n⚡ PRO: https://pay.kiwify.com.br/3klvFH6\n👑 PREMIUM: https://pay.kiwify.com.br/9SShnKM`);
