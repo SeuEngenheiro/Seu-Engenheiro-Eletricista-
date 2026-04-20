@@ -110,10 +110,10 @@ export default async function handler(req, res) {
 
 ━━━━━━━━━━━━━━━
 🆓 *GRÁTIS — R$0*
-• 5 cálculos por dia
-• Dúvidas técnicas ilimitadas
-• Consulta básica de normas
-• Acesso 24h via WhatsApp
+• Até 5 cálculos elétricos por dia
+• Até 5 perguntas técnicas por dia
+• Consulta à NBR 5410 incluída
+• Acesso 24h
 
 ━━━━━━━━━━━━━━━
 ⚡ *PRO — R$19,90/mês*
