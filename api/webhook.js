@@ -119,17 +119,9 @@ export default async function handler(req, res) {
       await registrarConversa(telefone, resp, 'agente');
       return res.status(200).json({ ok: true });
     }
- // ═══ MEU PLANO ═══
-    if (/\b(meu plano|qual.*plano|plano.*atual|que plano)\b/i.test(msg)) {
-      const nomePlano = plano === 'premium' ? '👑 PREMIUM' : plano === 'pro' ? '⚡ PRO' : '🆓 GRÁTIS';
-      const descPlano = plano === 'premium' ? 'Acesso total liberado — sem limites!' : plano === 'pro' ? 'Cálculos ilimitados + análise de fotos.' : '5 cálculos/dia · 5 perguntas/dia.';
-      await enviarMensagem(telefone, `Você está no plano *${nomePlano}*\n\n${descPlano}`);
-      await registrarConversa(telefone, 'meu plano', 'agente');
-      return res.status(200).json({ ok: true });
-    }
 
     // ═══ PLANOS ═══
-    if (/\b(planos?|assinar|upgrade|quanto custa|contratar|ver planos|quero assinar)\b/i.test(msg)) {
+    if (/\b(ver planos|quero assinar|assinar plano|assinar|upgrade|quanto custa|contratar)\b/i.test(msg)) {
       await enviarMensagem(telefone, MSG_PLANOS);
       await registrarConversa(telefone, MSG_PLANOS, 'agente');
       return res.status(200).json({ ok: true });
