@@ -72,6 +72,7 @@ export default async function handler(req, res) {
     const mensagem = (body.text?.message || body.caption || '').trim();
     const nome = body.senderName || 'Usuário';
 
+    console.log('[WEBHOOK]', telefone, '|', mensagem.slice(0,30), '|', Object.keys(body).join(','));
     if (!telefone || !mensagem) return res.status(200).json({ ok: true });
 
     // Evitar duplicação
