@@ -82,6 +82,8 @@ export default async function handler(req, res) {
 
     const usuario = await verificarOuCriarUsuario(telefone, nome);
 
+    console.log('[ZAPI BODY]', JSON.stringify(Object.keys(body)));
+    if(body.image) console.log('[IMAGE]', JSON.stringify(body.image).slice(0,200));
     // ═══ ANÁLISE DE FOTO ═══
     const imagemUrl = body.image?.imageUrl || body.imageMessage?.url;
     const imagemBase64 = body.image?.base64 || body.imageMessage?.base64;
