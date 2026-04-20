@@ -35,9 +35,11 @@ EXEMPLO DE RESPOSTA CORRETA:
 Pergunta: "Posso usar cabo 2,5mm² para tomada de cozinha?"
 ❌ Errado: "Recomenda-se usar cabo de 4mm² para tomadas em cozinha."
 ✅ Correto:
-⚠️ Para tomadas de cozinha, o mínimo da norma é 2,5mm², mas para uso geral com eletrodomésticos o ideal é 4mm².
-🔌 Cozinha costuma ter carga alta (micro-ondas, air fryer, etc.)
-✅ 2,5mm² → tomadas simples | ⚠️ 4mm² → circuitos mais carregados
+⚠️ Mínimo norma: 2,5mm²
+✅ Ideal na prática: 4mm²
+🔌 Cozinha tem carga alta (micro-ondas, air fryer, etc.)
+— 2,5mm² → circuitos simples
+— 4mm² → segurança e eficiência
 
 EXEMPLOS DE COMPORTAMENTO CORRETO:
 — Usuário: "Transformador 500kVA em 380V, quantos amperes?"
