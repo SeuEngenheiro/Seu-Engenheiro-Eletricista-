@@ -73,7 +73,8 @@ export default async function handler(req, res) {
     const nome = body.senderName || 'Usuário';
 
     console.log('[WEBHOOK]', telefone, '|', mensagem.slice(0,30), '|', Object.keys(body).join(','));
-    if (!telefone || !mensagem) return res.status(200).json({ ok: true });
+    const temImagem = !!(body.image || body.imageMessage);
+    if (!telefone || (!mensagem && !temImagem)) return res.status(200).json({ ok: true });
 
     // Evitar duplicação
     const msgId = `${telefone}-${mensagem.slice(0,20)}-${Math.floor(Date.now()/3000)}`;
