@@ -53,6 +53,9 @@ export default async function handler(req, res) {
     const mensagem = (body.text?.message || body.caption || '').trim();
     const nome = body.senderName || 'Usuário';
     const temImagem = !!(body.image || body.imageMessage);
+    console.log('[BODY KEYS]', Object.keys(body));
+console.log('[TYPE]', body.type);
+console.log('[IMAGE FIELD]', JSON.stringify(body.image)?.slice(0,100));
 
     if (!telefone || (!mensagem && !temImagem)) return res.status(200).json({ ok: true });
 
