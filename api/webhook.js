@@ -24,7 +24,7 @@ function isOla(msg) {
 
 // Detecta se é um CÁLCULO (consome limite de cálculos)
 function ehCalculo(msg) {
-  return /\b(calcul(ar|ei|ou|ando|a|e)|dimens(ion|ionar|ionamento)|quanto(s)?\s*(amp|a\b|v\b)|corrente\s*(de|do|da|motor|transf|cabo|circuito)|queda\s*(de\s*)?tens|potência\s*(de|do|da)|disjuntor\s*(para|de|do)|cabo\s*(para|de|do|mm)|seção\s*(do|de|para)\s*cabo|fator\s*de\s*potência|banco\s*de\s*capacitor|iluminância|lux|motor\s*de\s*\d|chuveiro\s*de\s*\d|transformador\s*de\s*\d|\d+\s*(kva|kw|cv|hp|w)\s*(em|para|no?)\s*\d|\d+\s*v\s*(trifásico|monofásico|bifásico))\b/i.test(msg);
+  return /\b(calcul|dimens|corrente|queda.*tens|disjuntor|cabo\s*(para|de|mm)|motor|chuveiro|transformador|potência|capacitor|iluminância|\d+\s*(kva|kw|cv|hp|w)|\d+\s*v\s*(tri|mono|bi))\b/i.test(msg);
 }
 
 // Detecta se é uma PERGUNTA TÉCNICA (consome limite de perguntas)
