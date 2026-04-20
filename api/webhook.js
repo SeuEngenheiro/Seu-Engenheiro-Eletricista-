@@ -26,6 +26,10 @@ function ehPerguntaTecnica(msg) {
 function ehConversao(msg) {
   return /\b(convert(er|e|a)|transforma(r)?|quanto\s*é|em\s*(watts?|kw|cv|hp|volts?|amperes?|hz|rpm|°c|°f|kelvin|awg|mm²)|de\s*(cv|hp|kw|mw|kva|kwh|v|a|hz|rpm|°c|°f)\s*para)\b/i.test(msg);
 }
+function ehMaterial(msg) {
+  return /\b(material|lista de material|orcamento|orçamento|lista de materiais)\b/i.test(msg);
+}
+
 function ehOutraNorma(msg) {
   return /\b(nr-10|nr10|nr-12|nr12|nr-33|nr33|nr-35|nr35|nbr\s*5419|nbr5419|nbr\s*5413|nbr5413|nbr\s*14039|nbr14039)\b/i.test(msg);
 }
