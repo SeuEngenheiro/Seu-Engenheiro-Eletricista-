@@ -1,5 +1,5 @@
-import { verificarOuCriarUsuario, verificarLimiteCalculos, verificarLimitePerguntas, registrarCalculo, registrarConversa, registrarPergunta, buscarHistorico } from '../lib/supabase.js';
-import { chamarClaude } from '../lib/claude.js';
+import { verificarOuCriarUsuario, verificarLimiteCalculos, verificarLimitePerguntas, registrarCalculo, registrarConversa, buscarHistorico } from '../lib/supabase.js';
+import { chamarClaude, analisarFoto } from '../lib/claude.js';
 import { enviarMensagem } from '../lib/zapi.js';
 
 // Controle de boas-vindas (não repetir na mesma sessão)
@@ -24,7 +24,7 @@ function isOla(msg) {
 
 // Detecta se é um CÁLCULO (consome limite de cálculos)
 function ehCalculo(msg) {
-  return /\b(calcul|dimens|corrente|queda.*tens|disjuntor|cabo\s*(para|de|mm)|motor|chuveiro|transformador|potência|capacitor|iluminância|\d+\s*(kva|kw|cv|hp|w)|\d+\s*v\s*(tri|mono|bi))\b/i.test(msg);
+  return /\b(calcul(ar|ei|ou|ando|a|e)|dimens(ion|ionar|ionamento)|quanto(s)?\s*(amp|a\b|v\b)|corrente\s*(de|do|da|motor|transf|cabo|circuito)|queda\s*(de\s*)?tens|potência\s*(de|do|da)|disjuntor\s*(para|de|do)|cabo\s*(para|de|do|mm)|seção\s*(do|de|para)\s*cabo|fator\s*de\s*potência|banco\s*de\s*capacitor|iluminância|lux|motor\s*de\s*\d|chuveiro\s*de\s*\d|transformador\s*de\s*\d|\d+\s*(kva|kw|cv|hp|w)\s*(em|para|no?)\s*\d|\d+\s*v\s*(trifásico|monofásico|bifásico))\b/i.test(msg);
 }
 
 // Detecta se é uma PERGUNTA TÉCNICA (consome limite de perguntas)
@@ -48,17 +48,17 @@ function ehOutraNorma(msg) {
 
 const BOAS_VINDAS_GRATIS = `🆓 *5 cálculos grátis/dia*\n\n⚡ IA ESPECIALIZADA EM ELÉTRICA\n \n🏅 Desenvolvida por Engenheiro (CREA)\n \n⚠️ Não substitui projeto técnico com ART quando exigido.\n \n👇 Como posso te ajudar?`;
 
-const BOAS_VINDAS_PRO = `⚡ *PRO ativo — ilimitado*\n\nOi! Que bom que você está aqui 👷\n\nPode mandar sua dúvida — cálculos ilimitados, diagnóstico e normas completas!\n\n💡 Quer projeto detalhado, materiais e suporte humano?\n👑 *PREMIUM R$39,99/mês*: https://pay.kiwify.com.br/9SShnKM`;
+const BOAS_VINDAS_PRO = `⚡ *PRO ativo — ilimitado*\n\nOi! Que bom que você está aqui 👷\n\nPode mandar sua dúvida — cálculos ilimitados, diagnóstico e normas completas!\n\n💡 Quer projeto detalhado, materiais e suporte humano?\n👑 *PREMIUM R$39,90/mês*: https://pay.kiwify.com.br/9SShnKM`;
 
 const BOAS_VINDAS_PREMIUM = `👑 *PREMIUM — nível engenheiro*\n\nOi! Ótimo ter você aqui 👷\n\nVocê tem o melhor plano disponível. Me manda qualquer dúvida — cálculo, projeto, material ou suporte especializado!\n\n✓ Tudo liberado · ✓ Sem limites · ✓ Suporte humano\n\n✅ Acesso total liberado — sem limites!`;
 
-const MSG_LIMITE_CALCULOS = `⚠️ Você atingiu o limite de 5 cálculos diários do plano gratuito.\nPara continuar calculando sem limites:\n\n💳 *Planos Engenheiro Eletricista AI*\n\n━━━━━━━━━━━━━━━\n🆓 *GRÁTIS — R$0*\n• Até 5 cálculos elétricos por dia\n• Até 5 perguntas técnicas por dia\n• Consulta à NBR 5410 incluída\n• Acesso 24h via WhatsApp\n\n━━━━━━━━━━━━━━━\n⚡ *PRO — R$19,99/mês*\n• Cálculos ilimitados\n• Dimensionamento completo\n• Diagnóstico automático\n• Normas técnicas completas\n• IA técnica 24h\n👉 https://pay.kiwify.com.br/3klvFH6\n\n━━━━━━━━━━━━━━━\n👑 *PREMIUM — R$39,99/mês*\n• Tudo do PRO\n• Lista de materiais com preços\n• Projeto elétrico detalhado\n• Histórico completo\n• Suporte com especialista\n• Garantia 7 dias 🔒\n👉 https://pay.kiwify.com.br/9SShnKM`;
+const MSG_LIMITE_CALCULOS = `⚠️ Você atingiu o limite de *5 cálculos diários* do plano gratuito.\n\nPara continuar calculando sem limites:\n\n⚡ *PRO — R$19,90/mês*\n• Cálculos ilimitados\n• Diagnóstico automático\n• Normas completas\n👉 https://pay.kiwify.com.br/3klvFH6\n\n👑 *PREMIUM — R$39,90/mês*\n• Tudo do PRO + projetos + materiais + suporte\n👉 https://pay.kiwify.com.br/9SShnKM`;
 
-const MSG_LIMITE_PERGUNTAS = `⚠️ Você atingiu o limite de *5 perguntas técnicas diárias* do plano gratuito.\n\nPara continuar sem limites:\n\n⚡ *PRO — R$19,99/mês*\n👉 https://pay.kiwify.com.br/3klvFH6\n\n👑 *PREMIUM — R$39,99/mês*\n👉 https://pay.kiwify.com.br/9SShnKM`;
+const MSG_LIMITE_PERGUNTAS = `⚠️ Você atingiu o limite de *5 perguntas técnicas diárias* do plano gratuito.\n\nPara continuar sem limites:\n\n⚡ *PRO — R$19,90/mês*\n👉 https://pay.kiwify.com.br/3klvFH6\n\n👑 *PREMIUM — R$39,90/mês*\n👉 https://pay.kiwify.com.br/9SShnKM`;
 
 const MSG_NORMA_BLOQUEADA = `📋 Consulta a outras normas está disponível nos planos *PRO* e *PREMIUM*.\n\nNo plano grátis você tem acesso à *NBR 5410*.\n\n⚡ PRO: https://pay.kiwify.com.br/3klvFH6\n👑 PREMIUM: https://pay.kiwify.com.br/9SShnKM`;
 
-const MSG_PLANOS = `💳 *Planos Engenheiro Eletricista AI*\n\n━━━━━━━━━━━━━━━\n🆓 *GRÁTIS — R$0*\n• Até 5 cálculos elétricos por dia\n• Até 5 perguntas técnicas por dia\n• Consulta à NBR 5410 incluída\n• Acesso 24h via WhatsApp\n\n━━━━━━━━━━━━━━━\n⚡ *PRO — R$19,99/mês*\n• Cálculos ilimitados\n• Dimensionamento completo\n• Diagnóstico automático\n• Normas técnicas completas\n• IA técnica 24h\n👉 https://pay.kiwify.com.br/3klvFH6\n\n━━━━━━━━━━━━━━━\n👑 *PREMIUM — R$39,99/mês*\n• Tudo do PRO\n• Lista de materiais com preços\n• Projeto elétrico detalhado\n• Histórico completo\n• Suporte com especialista\n• Garantia 7 dias 🔒\n👉 https://pay.kiwify.com.br/9SShnKM\n━━━━━━━━━━━━━━━`;
+const MSG_PLANOS = `💳 *Planos Engenheiro Eletricista AI*\n\n━━━━━━━━━━━━━━━\n🆓 *GRÁTIS — R$0*\n• Até 5 cálculos elétricos por dia\n• Até 5 perguntas técnicas por dia\n• Consulta à NBR 5410 incluída\n• Acesso 24h via WhatsApp\n\n━━━━━━━━━━━━━━━\n⚡ *PRO — R$19,90/mês*\n• Cálculos ilimitados\n• Dimensionamento completo\n• Diagnóstico automático\n• Normas técnicas completas\n• IA técnica 24h\n👉 https://pay.kiwify.com.br/3klvFH6\n\n━━━━━━━━━━━━━━━\n👑 *PREMIUM — R$39,90/mês*\n• Tudo do PRO\n• Lista de materiais com preços\n• Projeto elétrico detalhado\n• Histórico completo\n• Suporte com especialista\n• Garantia 7 dias 🔒\n👉 https://pay.kiwify.com.br/9SShnKM\n━━━━━━━━━━━━━━━`;
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -81,6 +81,48 @@ export default async function handler(req, res) {
     setTimeout(() => mensagensProcessadas.delete(msgId), 10000);
 
     const usuario = await verificarOuCriarUsuario(telefone, nome);
+
+    // ═══ ANÁLISE DE FOTO ═══
+    const imagemUrl = body.image?.imageUrl || body.imageMessage?.url;
+    const imagemBase64 = body.image?.base64 || body.imageMessage?.base64;
+    const mimeType = body.image?.mimeType || 'image/jpeg';
+
+    if (imagemBase64 || imagemUrl) {
+      const limFoto = await verificarLimiteFotos(telefone, plano);
+      if (!limFoto.permitido) {
+        if (plano === 'gratis') {
+          await enviarMensagem(telefone, `📸 Análise de fotos está disponível nos planos *PRO* e *PREMIUM*.
+
+⚡ PRO: https://pay.kiwify.com.br/3klvFH6
+👑 PREMIUM: https://pay.kiwify.com.br/9SShnKM`);
+        } else {
+          await enviarMensagem(telefone, `⚠️ Você atingiu o limite de *20 fotos diárias* do plano PRO.
+
+👑 No PREMIUM as análises são ilimitadas!
+👉 https://pay.kiwify.com.br/9SShnKM`);
+        }
+        return res.status(200).json({ ok: true });
+      }
+
+      try {
+        let base64 = imagemBase64;
+        if (!base64 && imagemUrl) {
+          const imgRes = await fetch(imagemUrl);
+          const buffer = await imgRes.arrayBuffer();
+          base64 = Buffer.from(buffer).toString('base64');
+        }
+        const resposta = await analisarFoto(telefone, base64, mimeType, plano);
+        await registrarFoto(telefone);
+        await registrarConversa(telefone, '[foto]', 'usuario');
+        await registrarConversa(telefone, resposta, 'agente');
+        await enviarMensagem(telefone, resposta);
+        return res.status(200).json({ ok: true });
+      } catch (err) {
+        await enviarMensagem(telefone, `Não consegui analisar a foto. Tente enviar novamente! 😊`);
+        return res.status(200).json({ ok: true });
+      }
+    }
+
     await registrarConversa(telefone, mensagem, 'usuario');
 
     const msg = mensagem.toLowerCase().trim();
@@ -166,7 +208,6 @@ export default async function handler(req, res) {
         await registrarConversa(telefone, MSG_LIMITE_PERGUNTAS, 'agente');
         return res.status(200).json({ ok: true });
       }
-      await registrarPergunta(telefone, mensagem);
     }
 
     // ═══ IA RESPONDE ═══
