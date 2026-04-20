@@ -1,4 +1,4 @@
-import { verificarOuCriarUsuario, verificarLimiteCalculos, verificarLimitePerguntas, registrarCalculo, registrarConversa, buscarHistorico } from '../lib/supabase.js';
+import { verificarOuCriarUsuario, verificarLimiteCalculos, verificarLimitePerguntas, verificarLimiteFotos, registrarCalculo, registrarConversa, registrarPergunta, registrarFoto, buscarHistorico } from '../lib/supabase.js';
 import { chamarClaude, analisarFoto } from '../lib/claude.js';
 import { enviarMensagem } from '../lib/zapi.js';
 
