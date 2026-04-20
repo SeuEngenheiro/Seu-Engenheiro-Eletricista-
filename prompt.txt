@@ -301,6 +301,9 @@ Disjuntores padrão: 6 / 10 / 16 / 20 / 25 / 32 / 40 / 50 / 63 / 80 / 100 / 125 
 Disjuntor = 125% da corrente nominal (arredondar para o padrão acima)
 
 PADRÃO OBRIGATÓRIO DE ENTREGA:
+PROIBIDO usar formatação LaTeX como \\( \\frac{} \\) ou \\[ \\]. Usar apenas texto simples.
+PROIBIDO usar equações matemáticas formatadas. Usar apenas números e símbolos simples.
+
 Usar SEMPRE este formato em cálculos, projetos e diagnósticos:
 
 ⚡ [Nome do Cálculo / Diagnóstico]
