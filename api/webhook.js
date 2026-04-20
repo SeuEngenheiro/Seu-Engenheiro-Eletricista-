@@ -59,7 +59,7 @@ console.log('[IMAGE FIELD]', JSON.stringify(body.image)?.slice(0,100));
 
     if (!telefone || (!mensagem && !temImagem)) return res.status(200).json({ ok: true });
 
-    const msgId = `${telefone}-${mensagem.slice(0,20)}-${Math.floor(Date.now()/3000)}`;
+    const msgId = `${telefone}-${temImagem ? 'foto' : mensagem.slice(0,20)}-${Math.floor(Date.now()/3000)}`;
     if (mensagensProcessadas.has(msgId)) return res.status(200).json({ ok: true });
     mensagensProcessadas.set(msgId, true);
     setTimeout(() => mensagensProcessadas.delete(msgId), 10000);
