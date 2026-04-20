@@ -152,6 +152,17 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true });
     }
 
+    // ═══ MATERIAIS ═══
+    if (ehMaterial(msg)) {
+      const contexto = plano === 'premium'
+        ? mensagem + '\n[PREMIUM: gerar lista completa com estimativa de preços em R$]'
+        : mensagem + '\n[Gerar lista de materiais sem preços]';
+      const resposta = await chamarClaude(telefone, contexto, plano);
+      await registrarConversa(telefone, resposta, 'agente');
+      await enviarMensagem(telefone, resposta);
+      return res.status(200).json({ ok: true });
+    }
+    
     // ═══ CONVERSÕES ═══
     if (ehConversao(msg)) {
       const resposta = await chamarClaude(telefone, mensagem, plano);
