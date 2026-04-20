@@ -186,7 +186,7 @@ Para continuar sem limites, conheça nossos planos:
     // ═══ IA RESPONDE ═══
     const resposta = await chamarClaude(telefone, mensagem, usuario.plano);
 
-    const ehCalculo = /calcul|corrente|disjuntor|cabo|motor|chuveiro|queda|transformador|ohm|potência/i.test(mensagem);
+    const ehCalculo = /calcul(ar|ei|ou|ando)|dimens(ion|ionar)|quanto.*amp|quantos.*amp|corrente.*motor|corrente.*transf|corrente.*cabo|queda.*tens/i.test(mensagem);
     if (ehCalculo) await registrarCalculo(telefone, 'geral', { mensagem }, { resposta });
 
     await registrarConversa(telefone, resposta, 'agente');
