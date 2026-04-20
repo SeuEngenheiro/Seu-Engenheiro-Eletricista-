@@ -1,4 +1,4 @@
-import { verificarOuCriarUsuario, verificarLimiteCalculos, verificarLimitePerguntas, registrarCalculo, registrarConversa, buscarHistorico } from '../lib/supabase.js';
+import { verificarOuCriarUsuario, verificarLimiteCalculos, verificarLimitePerguntas, registrarCalculo, registrarConversa, registrarPergunta, buscarHistorico } from '../lib/supabase.js';
 import { chamarClaude } from '../lib/claude.js';
 import { enviarMensagem } from '../lib/zapi.js';
 
@@ -166,6 +166,7 @@ export default async function handler(req, res) {
         await registrarConversa(telefone, MSG_LIMITE_PERGUNTAS, 'agente');
         return res.status(200).json({ ok: true });
       }
+      await registrarPergunta(telefone, mensagem);
     }
 
     // ═══ IA RESPONDE ═══
