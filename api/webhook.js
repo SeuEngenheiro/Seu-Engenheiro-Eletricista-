@@ -1,4 +1,4 @@
-import { verificarOuCriarUsuario, verificarLimiteCalculos, verificarLimitePerguntas, verificarLimiteFotos, registrarCalculo, registrarConversa, registrarPergunta, registrarFoto, buscarHistorico } from '../lib/supabase.js';
+import { verificarOuCriarUsuario, verificarLimiteCalculos, verificarLimitePerguntas, registrarCalculo, registrarConversa, buscarHistorico } from '../lib/supabase.js';
 import { chamarClaude, analisarFoto } from '../lib/claude.js';
 import { enviarMensagem } from '../lib/zapi.js';
 
@@ -72,9 +72,7 @@ export default async function handler(req, res) {
     const mensagem = (body.text?.message || body.caption || '').trim();
     const nome = body.senderName || 'Usuário';
 
-    console.log('[WEBHOOK]', telefone, '|', mensagem.slice(0,30), '|', Object.keys(body).join(','));
-    const temImagem = !!(body.image || body.imageMessage);
-    if (!telefone || (!mensagem && !temImagem)) return res.status(200).json({ ok: true });
+    if (!telefone || !mensagem) return res.status(200).json({ ok: true });
 
     // Evitar duplicação
     const msgId = `${telefone}-${mensagem.slice(0,20)}-${Math.floor(Date.now()/3000)}`;
@@ -84,8 +82,6 @@ export default async function handler(req, res) {
 
     const usuario = await verificarOuCriarUsuario(telefone, nome);
 
-    console.log('[ZAPI BODY]', JSON.stringify(Object.keys(body)));
-    if(body.image) console.log('[IMAGE]', JSON.stringify(body.image).slice(0,200));
     // ═══ ANÁLISE DE FOTO ═══
     const imagemUrl = body.image?.imageUrl || body.imageMessage?.url;
     const imagemBase64 = body.image?.base64 || body.imageMessage?.base64;
@@ -130,7 +126,6 @@ export default async function handler(req, res) {
     await registrarConversa(telefone, mensagem, 'usuario');
 
     const msg = mensagem.toLowerCase().trim();
-    const plano = usuario?.plano || 'gratis';
 
     // ═══ BOAS-VINDAS ═══
     if (isOla(mensagem)) {
