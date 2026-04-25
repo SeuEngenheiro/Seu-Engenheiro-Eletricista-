@@ -10,12 +10,16 @@ import {
   registrarFoto,
   registrarBuscaPreco,
   buscarHistorico,
-  // ⚠️ IMPORTANTE: você precisa adicionar essas duas funções no /lib/supabase.js (passo a passo abaixo)
   jaProcessouMensagem,
   marcarMensagemProcessada
 } from '../lib/supabase.js';
 import { chamarClaude, analisarFoto, buscarPrecosIA } from '../lib/claude.js';
 import { enviarMensagem } from '../lib/zapi.js';
+
+// ⚙️ Aumenta timeout do Vercel pra 60s (suficiente pra Claude responder)
+export const config = {
+  maxDuration: 60,
+};
 
 const boasVindasEnviadas = new Map();
 const TEMPO_SESSAO = 8 * 60 * 60 * 1000;
@@ -53,16 +57,53 @@ const MSG_NORMA_BLOQUEADA = `📋 Outras normas disponíveis nos planos *PRO* e 
 const MSG_PLANOS = `💳 *Planos Engenheiro Eletricista AI*\n\n━━━━━━━━━━━━━━━\n🆓 *GRÁTIS — R$0*\n• 5 cálculos/dia · 5 perguntas/dia\n• NBR 5410 incluída · Acesso 24h\n\n━━━━━━━━━━━━━━━\n⚡ *PRO — R$19,99/mês*\n• Cálculos ilimitados\n• Diagnóstico automático\n• Normas completas\n• Análise de fotos (20/dia)\n👉 https://pay.kiwify.com.br/3klvFH6\n\n━━━━━━━━━━━━━━━\n👑 *PREMIUM — R$39,99/mês*\n• Tudo do PRO\n• Lista de materiais com preços atualizados\n• Projeto elétrico detalhado\n• Histórico completo\n• Análise de fotos ilimitada\n• Suporte com especialista\n• Garantia 7 dias 🔒\n👉 https://pay.kiwify.com.br/9SShnKM\n━━━━━━━━━━━━━━━`;
 
 // ═══════════════════════════════════════════════════════════════
-// FUNÇÃO PRINCIPAL DE PROCESSAMENTO (chamada em background)
+// HANDLER PRINCIPAL — processa SINCRONICAMENTE com await
+// Z-API espera resposta 200 dentro de ~30s. Vercel tem 60s.
 // ═══════════════════════════════════════════════════════════════
-async function processarMensagem(body) {
+export default async function handler(req, res) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
   try {
+    const body = req.body;
+
+    if (body.fromMe || body.isGroup) {
+      return res.status(200).json({ ok: true });
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // 🛡️ DEDUPLICAÇÃO ROBUSTA
+    // ═══════════════════════════════════════════════════════════
+
+    // Pega ID real da Z-API (várias variações possíveis)
+    const messageId = body.messageId || body.id || body.message?.id || body.key?.id;
+
+    if (!messageId) {
+      console.warn('[WEBHOOK] Mensagem sem ID — body keys:', Object.keys(body || {}));
+      return res.status(200).json({ ok: true });
+    }
+
+    // Verifica se já processou (Supabase persiste entre invocações)
+    const jaProcessou = await jaProcessouMensagem(messageId);
+    if (jaProcessou) {
+      console.log(`[DEDUP] ${messageId} já processada — ignorando`);
+      return res.status(200).json({ ok: true, dedup: true });
+    }
+
+    // Marca como processada IMEDIATAMENTE
+    await marcarMensagemProcessada(messageId);
+
+    // ═══════════════════════════════════════════════════════════
+    // ⚙️ PROCESSAMENTO COM AWAIT (síncrono dentro do handler)
+    // ═══════════════════════════════════════════════════════════
+
     const telefone = body.phone?.replace(/\D/g, '');
     const mensagem = (body.text?.message || body.caption || '').trim();
     const nome = body.senderName || 'Usuário';
     const temImagem = !!(body.image || body.imageMessage);
 
-    if (!telefone || (!mensagem && !temImagem)) return;
+    if (!telefone || (!mensagem && !temImagem)) {
+      return res.status(200).json({ ok: true });
+    }
 
     const usuario = await verificarOuCriarUsuario(telefone, nome);
     const plano = usuario?.plano || 'gratis';
@@ -75,7 +116,7 @@ async function processarMensagem(body) {
           ? `📸 Análise de fotos disponível nos planos *PRO* e *PREMIUM*.\n\n⚡ PRO: https://pay.kiwify.com.br/3klvFH6\n👑 PREMIUM: https://pay.kiwify.com.br/9SShnKM`
           : `⚠️ Limite de *20 fotos diárias* do PRO atingido.\n\n👑 PREMIUM tem fotos ilimitadas!\n👉 https://pay.kiwify.com.br/9SShnKM`;
         await enviarMensagem(telefone, msg);
-        return;
+        return res.status(200).json({ ok: true });
       }
       try {
         const imagemUrl = body.image?.imageUrl || body.imageMessage?.url;
@@ -91,10 +132,11 @@ async function processarMensagem(body) {
         await registrarConversa(telefone, '[foto]', 'usuario');
         await registrarConversa(telefone, resposta, 'agente');
         await enviarMensagem(telefone, resposta);
-        return;
+        return res.status(200).json({ ok: true });
       } catch (err) {
+        console.error('[ERRO FOTO]', err);
         await enviarMensagem(telefone, `Não consegui analisar a foto. Tente novamente! 😊`);
-        return;
+        return res.status(200).json({ ok: true });
       }
     }
 
@@ -109,36 +151,39 @@ async function processarMensagem(body) {
         await enviarMensagem(telefone, texto);
         await registrarConversa(telefone, texto, 'agente');
       }
-      return;
+      return res.status(200).json({ ok: true });
     }
 
     // ═══ HISTÓRICO ═══
     if (/^(histórico|historico|meus cálculos|meus calculos)$/.test(msg)) {
       if (plano !== 'premium') {
         await enviarMensagem(telefone, `Histórico disponível no plano *PREMIUM*.\n\n👑 https://pay.kiwify.com.br/9SShnKM`);
-        return;
+        return res.status(200).json({ ok: true });
       }
       const historico = await buscarHistorico(telefone, 10);
-      if (!historico.length) { await enviarMensagem(telefone, `Você ainda não realizou nenhum cálculo! 😊`); return; }
+      if (!historico.length) {
+        await enviarMensagem(telefone, `Você ainda não realizou nenhum cálculo! 😊`);
+        return res.status(200).json({ ok: true });
+      }
       let resp = `📋 *Seus últimos ${historico.length} cálculos:*\n\n`;
       historico.forEach((c, i) => { resp += `${i+1}. *${c.tipo_calculo||'Cálculo'}* — ${new Date(c.realizado_em).toLocaleDateString('pt-BR')}\n`; });
       await enviarMensagem(telefone, resp);
       await registrarConversa(telefone, resp, 'agente');
-      return;
+      return res.status(200).json({ ok: true });
     }
 
     // ═══ PLANOS ═══
     if (/\b(ver planos|quero assinar|assinar plano|assinar|upgrade|quanto custa|contratar)\b/i.test(msg)) {
       await enviarMensagem(telefone, MSG_PLANOS);
       await registrarConversa(telefone, MSG_PLANOS, 'agente');
-      return;
+      return res.status(200).json({ ok: true });
     }
 
     // ═══ NORMA BLOQUEADA ═══
     if (plano === 'gratis' && ehOutraNorma(msg)) {
       await enviarMensagem(telefone, MSG_NORMA_BLOQUEADA);
       await registrarConversa(telefone, MSG_NORMA_BLOQUEADA, 'agente');
-      return;
+      return res.status(200).json({ ok: true });
     }
 
     // ═══ MATERIAIS COM PREÇOS (PREMIUM) ═══
@@ -147,23 +192,23 @@ async function processarMensagem(body) {
         const limite = await verificarLimiteBuscaPreco(telefone);
         if (!limite.permitido) {
           await enviarMensagem(telefone, `⚠️ Limite de *7 buscas de preços diárias* atingido.\n\nTente novamente amanhã!`);
-          return;
+          return res.status(200).json({ ok: true });
         }
         try {
           const resposta = await buscarPrecosIA(telefone, mensagem, plano);
           await registrarBuscaPreco(telefone);
           await registrarConversa(telefone, resposta, 'agente');
           await enviarMensagem(telefone, resposta);
-          return;
+          return res.status(200).json({ ok: true });
         } catch {
           await enviarMensagem(telefone, `Não consegui buscar preços agora. Tente novamente! 😊`);
-          return;
+          return res.status(200).json({ ok: true });
         }
       } else {
         const resposta = await chamarClaude(telefone, mensagem + '\n[Gerar lista de materiais SEM preços — plano grátis/PRO]', plano);
         await registrarConversa(telefone, resposta, 'agente');
         await enviarMensagem(telefone, resposta);
-        return;
+        return res.status(200).json({ ok: true });
       }
     }
 
@@ -172,7 +217,7 @@ async function processarMensagem(body) {
       const resposta = await chamarClaude(telefone, mensagem, plano);
       await registrarConversa(telefone, resposta, 'agente');
       await enviarMensagem(telefone, resposta);
-      return;
+      return res.status(200).json({ ok: true });
     }
 
     // ═══ CÁLCULOS ═══
@@ -182,14 +227,14 @@ async function processarMensagem(body) {
         if (!limite.permitido) {
           await enviarMensagem(telefone, MSG_LIMITE_CALCULOS);
           await registrarConversa(telefone, MSG_LIMITE_CALCULOS, 'agente');
-          return;
+          return res.status(200).json({ ok: true });
         }
       }
       const resposta = await chamarClaude(telefone, mensagem, plano);
       await registrarCalculo(telefone, 'calculo', { mensagem }, { resposta });
       await registrarConversa(telefone, resposta, 'agente');
       await enviarMensagem(telefone, resposta);
-      return;
+      return res.status(200).json({ ok: true });
     }
 
     // ═══ PERGUNTAS TÉCNICAS ═══
@@ -198,7 +243,7 @@ async function processarMensagem(body) {
       if (!limite.permitido) {
         await enviarMensagem(telefone, MSG_LIMITE_PERGUNTAS);
         await registrarConversa(telefone, MSG_LIMITE_PERGUNTAS, 'agente');
-        return;
+        return res.status(200).json({ ok: true });
       }
       await registrarPergunta(telefone, mensagem);
     }
@@ -207,69 +252,10 @@ async function processarMensagem(body) {
     const resposta = await chamarClaude(telefone, mensagem, plano);
     await registrarConversa(telefone, resposta, 'agente');
     await enviarMensagem(telefone, resposta);
-  } catch (err) {
-    console.error('[ERRO PROCESSAR]', err);
-    // Tenta avisar o usuário sem quebrar
-    try {
-      const telefone = body.phone?.replace(/\D/g, '');
-      if (telefone) {
-        await enviarMensagem(telefone, '⚠️ Ops, tive um problema interno. Pode mandar de novo? 🙏');
-      }
-    } catch {}
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════
-// HANDLER DO WEBHOOK — RESPONDE 200 IMEDIATAMENTE
-// ═══════════════════════════════════════════════════════════════
-export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-
-  try {
-    const body = req.body;
-    if (body.fromMe || body.isGroup) return res.status(200).json({ ok: true });
-
-    // ═══════════════════════════════════════════════════════════
-    // 🛡️ DEDUPLICAÇÃO ROBUSTA (3 CAMADAS)
-    // ═══════════════════════════════════════════════════════════
-
-    // CAMADA 1: Pega o ID REAL da Z-API (não inventa)
-    // Z-API envia messageId no body. Esse é o ID único da mensagem.
-    const messageId = body.messageId || body.id || body.message?.id;
-
-    if (!messageId) {
-      console.warn('[WEBHOOK] Mensagem sem ID — ignorando por segurança');
-      return res.status(200).json({ ok: true });
-    }
-
-    // CAMADA 2: Verifica no Supabase se já processou (entre instâncias serverless)
-    const jaProcessou = await jaProcessouMensagem(messageId);
-    if (jaProcessou) {
-      console.log(`[WEBHOOK] Mensagem ${messageId} já processada — ignorando duplicata`);
-      return res.status(200).json({ ok: true, dedup: true });
-    }
-
-    // CAMADA 3: Marca como processada IMEDIATAMENTE (antes de chamar IA)
-    await marcarMensagemProcessada(messageId);
-
-    // ═══════════════════════════════════════════════════════════
-    // 🚀 RESPONDE 200 IMEDIATAMENTE PRA Z-API NÃO FAZER RETRY
-    // ═══════════════════════════════════════════════════════════
-    res.status(200).json({ ok: true, processing: true });
-
-    // ═══════════════════════════════════════════════════════════
-    // ⚙️ PROCESSA EM BACKGROUND (sem bloquear a resposta)
-    // ═══════════════════════════════════════════════════════════
-    // Não usa await aqui — deixa rodar em background
-    processarMensagem(body).catch(err => {
-      console.error('[ERRO BACKGROUND]', err);
-    });
-
-    return;
+    return res.status(200).json({ ok: true });
 
   } catch (err) {
     console.error('[ERRO WEBHOOK]', err);
-    // Mesmo em erro, retorna 200 pra Z-API não fazer retry
     return res.status(200).json({ ok: false, error: err.message });
   }
 }
