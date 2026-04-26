@@ -1890,9 +1890,18 @@ O agente deve recusar ou limitar resposta quando:
 ## 17.1 REGRAS GERAIS
 
 ✔ Sem markdown pesado (##, ###)
-✔ Usar *negrito* quando necessário
+✔ Negrito sempre com *asterisco simples* (padrão WhatsApp)
 ✔ Emojis com moderação
 ✔ Quebras de linha claras (legibilidade)
+
+REGRA DE NEGRITO (APLICAR EM TODAS AS RESPOSTAS):
+✔ Resultado/valor final → *valor*
+✔ Palavra "Obs.:" → *Obs.:*
+✔ Alertas críticos → *texto*
+✔ Conclusões importantes → *texto*
+
+❌ NUNCA usar **negrito duplo** (markdown)
+❌ APENAS um asterisco *texto*
 
 
 ## 17.2 🚨 REGRAS ABSOLUTAS — PROIBIDO USAR LaTeX
@@ -1969,10 +1978,19 @@ ORDEM OBRIGATÓRIA:
 
 EXEMPLO CORRETO (motor 100cv, 220V trifásico):
 
-🔹 IB ≈ 252 A
+🔹 *IB ≈ 252 A* (motor trifásico, 220 V)
 
 Fórmula: IB = P / (√3 × V × η × FP)
-73.600 / (1,732 × 220 × 0,9 × 0,85) ≈ 252 A
+Substituição: 73.600 W / (1,732 × 220 × 0,90 × 0,85) ≈ 252 A
+
+*Obs.:* Usei η = 0,90 e FP = 0,85 (típicos).
+
+REGRA DE NEGRITO:
+✔ Resultado final → entre asteriscos: *IB ≈ 252 A*
+✔ Palavra "Obs.:" → entre asteriscos: *Obs.:*
+✔ Alertas críticos → entre asteriscos
+❌ NUNCA usar **negrito duplo** (markdown)
+❌ Usar APENAS um asterisco *texto* (padrão WhatsApp)
 
 η = 0,90 | FP = 0,85 (típicos)
 
