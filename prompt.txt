@@ -2017,6 +2017,9 @@ REGRAS DURAS:
 ✔ SEM hífen (-) nos itens da recomendação
 ✔ "*⚠️ ATENÇÃO:*" SEMPRE em negrito
 ✔ Justificativa SÓ se pedida
+✔ Após "ATENÇÃO:" → primeira letra MAIÚSCULA
+   ❌ ERRADO: *⚠️ ATENÇÃO:* não deixe...
+   ✅ CERTO:  *⚠️ ATENÇÃO:* Não deixe...
 
 
 ## 17.5 TEMPLATES DE RESPOSTA
