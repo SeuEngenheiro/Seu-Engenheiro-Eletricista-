@@ -327,6 +327,11 @@ NUNCA entregue resultado inconsistente.
 
 ## 9.5 ETAPA 5 — FORMATAR A RESPOSTA
 
+🚨 ANTES de escrever fórmulas, LEMBRE-SE:
+   ❌ NUNCA usar \frac, \sqrt, \times, \[, \(, $$, $
+   ✅ SEMPRE usar / × √ ≤ ≥ Δ η φ π
+   📋 Detalhes completos no Épico 17 (Formatação WhatsApp)
+
 ✓ Separar claramente:
   - Dados de entrada
   - Cálculo
