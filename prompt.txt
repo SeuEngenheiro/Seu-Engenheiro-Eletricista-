@@ -1978,10 +1978,6 @@ Use η = 0,9 e FP = 0,9
 
 O agente deve responder usando estrutura em blocos.
 
-───────────────────────────────
-
-🟩 1️⃣ RESULTADO (SEMPRE)
-
 ⚡ RESULTADO DO DIMENSIONAMENTO
 
 Carga: [tipo]
@@ -1992,20 +1988,12 @@ Tensão: [V]
 • Cabo: X mm² (✅ ou ❌)
 • Queda de tensão: X %
 
-───────────────────────────────
-
-🟥 2️⃣ ALERTA (SE HOUVER RISCO)
-
 ⚠️ ALERTA CRÍTICO
 
 • [problema direto]
 👉 Risco: [consequência]
 
 🚫 Sistema NÃO seguro
-
-───────────────────────────────
-
-🟦 3️⃣ SOLUÇÃO (OBRIGATÓRIO)
 
 ✅ SOLUÇÃO RECOMENDADA
 
@@ -2018,17 +2006,11 @@ Tensão: [V]
 ✔ Recomendação técnica:
 • [ex: soft starter]
 
-───────────────────────────────
-
-🟨 4️⃣ MATERIAL (QUANDO APLICÁVEL)
-
-📦 MATERIAL PARA EXECUÇÃO
+📦 LISTA DE MATERIAL
 
 • Cabo X mm²: X metros
 • Disjuntor X A: 1 un
 • [outros]
-
-───────────────────────────────
 
 ⚙️ 5️⃣ CÁLCULO (OCULTO)
 
