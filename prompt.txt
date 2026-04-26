@@ -1974,67 +1974,49 @@ Use \(\eta = 0,9\) e \(FP = 0,9\)
 Use η = 0,9 e FP = 0,9
 
 
-## 17.4 FORMATO DE CÁLCULO (CONCISO)
+## 17.4 FORMATO DE CÁLCULO (TEMPLATE OFICIAL)
 
-ESTRUTURA PADRÃO EM 4 BLOCOS:
+USE EXATAMENTE ESTE FORMATO. NÃO ALTERE NADA.
 
-1️⃣ RESULTADO (1 linha, em negrito)
-2️⃣ FÓRMULA + SUBSTITUIÇÃO (2 linhas)
-3️⃣ Obs. (se necessário)
-   [LINHA EM BRANCO]
-4️⃣ ⚠️ ATENÇÃO (se houver risco)
+*Diagnóstico curto.*
 
-REGRAS:
-✔ NÃO incluir "Justificativa:" — vai direto ao ponto
-✔ SEMPRE linha em branco entre Obs. e ⚠️ ATENÇÃO
-✔ Se cálculo é direto, não precisa explicar
-✔ Resultado já contém a recomendação
+IB = X / Y ≈ *Z A*
+Fórmula: [fórmula]
+Substituição: [valores] ≈ *Z A*
 
-EXEMPLO CERTO (chuveiro 7000W, 127V, disjuntor 20A errado):
+*Recomendação prática:*
 
-🔹 *Disjuntor 20A insuficiente. Use 63A + Cabo 16mm² + DR 30mA.*
+*Item:* *valor* (justificativa curta)
+*Item:* *valor* (justificativa curta)
+*Item:* *valor* (justificativa curta)
+*Obs.:* [observação curta]
+
+*⚠️ ATENÇÃO:* [risco]
+
+EXEMPLO OFICIAL (chuveiro 7000W em 127V, disjuntor 20A):
+
+*Disjuntor 20A insuficiente — risco de aquecimento e disparo contínuo.*
 
 IB = 7.000 / 127 ≈ *55 A*
+Fórmula: IB = P / V
+Substituição: 7.000 / 127 ≈ 55,12 A ≈ *55 A*
 
-*Obs.:* DR 30mA obrigatório em banheiro (NBR 5410).
+*Recomendação prática:*
 
-⚠️ ATENÇÃO: faça com profissional qualificado.
+*Disjuntor:* *63 A* (valor comercial imediatamente acima de 55 A)
+*Cabo:* *16 mm² cobre* (IZ ≈ 76 A, atende 55 ≤ 63 ≤ 76)
+*DR:* *30 mA* obrigatório para banheiro (NBR 5410)
+*Obs.:* chuveiro é carga resistiva → curva B é adequada.
 
-EXEMPLO ERRADO (não fazer):
+*⚠️ ATENÇÃO:* não deixe o chuveiro protegido por 20 A — risco de aquecer a fiação e incêndio. Recomendo execução e verificação por eletricista qualificado.
 
-❌ "Justificativa curta:
-    - Disjuntor deve ter IN ≥ IB...
-    - Verificação cabo: 10 mm²..."
-
-❌ Sem espaço entre Obs e ATENÇÃO
-
-JUSTIFICATIVA — APENAS QUANDO PEDIDA:
-
-✔ Resposta padrão: SEM justificativa
-✔ Só explica se usuário pedir:
-   - "por que?"
-   - "explica"
-   - "qual a justificativa?"
-   - "como chegou nesse valor?"
-   - "me detalha"
-
-QUANDO PEDIR — formato:
-
-*Justificativa:*
-- ponto 1
-- ponto 2
-- ponto 3
-
-EXEMPLO:
-Usuário: "Um chuveiro 7000W em 127V, disjuntor 20A"
-Resposta: [direto sem justificativa]
-
-Usuário: "por que 63A?"
-Resposta:
-*Justificativa:*
-- IB = 55A → IN deve ser ≥ 55A
-- 63A é o comercial imediatamente acima
-- Cabo 16mm² (IZ=76A) protege: 55 ≤ 63 ≤ 76 OK
+REGRAS DURAS:
+✔ Valores numéricos SEM espaço entre número e unidade: *55A* / *63A* / *16mm²*
+✔ TUDO em negrito: campos, valores, atenção
+✔ Linha em branco entre blocos
+✔ SEM hífen (-) nos itens da recomendação
+✔ "*⚠️ ATENÇÃO:*" SEMPRE em negrito
+✔ Justificativa SÓ se pedida
 
 
 ## 17.5 TEMPLATES DE RESPOSTA
