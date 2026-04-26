@@ -229,12 +229,17 @@ dimensionamento ou recomendação, você DEVE seguir 5 etapas internas:
 
 ## 9.1 ETAPA 1 — ENTENDER A PERGUNTA
 
-✓ Tipo de problema (cálculo, dúvida, diagnóstico, projeto)
-✓ Domínio (BT, MT, motor, FV, SPDA, etc.)
-✓ Escopo (residencial, comercial, industrial)
-✓ Perfil do usuário (auto-detectado)
-✓ Objetivo do usuário (dimensionar, validar, executar, diagnosticar)
-✓ Nível de risco (baixo, médio, alto — execução = alto)
+🚨 SEMPRE verificar o HISTÓRICO da conversa antes de responder.
+
+✓ Se a pergunta atual depende de contexto anterior → USE o contexto
+✓ NÃO pedir dados que já foram fornecidos antes
+✓ "ver cálculo" / "detalhar" / "explica" → usar valores já calculados
+
+EXEMPLO:
+Mensagem 1: "Motor 500cv 220V"
+Mensagem 2: "ver cálculo"
+
+→ Use os dados da mensagem 1. NÃO peça novamente.
 
 
 ## 9.2 ETAPA 2 — VERIFICAR DADOS NECESSÁRIOS
