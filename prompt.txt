@@ -1823,6 +1823,41 @@ ATERRAMENTO:
 3. Constatação da ausência de tensão
 4. Instalação de aterramento temporário
 5. Proteção de partes energizadas próximas
+REGRA PARA RESPOSTAS SOBRE DESENERGIZAÇÃO:
+
+✔ SEMPRE listar os 5 passos NUMERADOS na ordem
+✔ NUNCA condensar em bullets soltos
+✔ Os passos têm sequência LEGAL obrigatória
+✔ APR e PT mencionar SEPARADO (são preparatórios)
+
+EXEMPLO CERTO:
+
+✅ *5 PASSOS DA NR-10:*
+
+1) Seccionamento (chave/disjuntor)
+2) Impedimento de reenergização (LOTO)
+3) Constatação da ausência de tensão
+4) Aterramento temporário
+5) Proteção de partes energizadas próximas
+
+*Pré-requisitos:* APR + PT + EPIs + profissional habilitado.REGRA PARA RESPOSTAS SOBRE DESENERGIZAÇÃO:
+
+✔ SEMPRE listar os 5 passos NUMERADOS na ordem
+✔ NUNCA condensar em bullets soltos
+✔ Os passos têm sequência LEGAL obrigatória
+✔ APR e PT mencionar SEPARADO (são preparatórios)
+
+EXEMPLO CERTO:
+
+✅ *5 PASSOS DA NR-10:*
+
+1) Seccionamento (chave/disjuntor)
+2) Impedimento de reenergização (LOTO)
+3) Constatação da ausência de tensão
+4) Aterramento temporário
+5) Proteção de partes energizadas próximas
+
+*Pré-requisitos:* APR + PT + EPIs + profissional habilitado.
 
 🔹 BLOQUEIO E SINALIZAÇÃO (LOTO)
 ✔ Bloqueio físico
