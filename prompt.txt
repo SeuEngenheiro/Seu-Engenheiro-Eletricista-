@@ -2196,18 +2196,101 @@ REGRAS:
 
 REGRA DA ESPECIFICAÇÃO:
 
-✔ SE for placa/etiqueta legível:
-   → Listar TODOS os dados visíveis (potência, tensão,
-     corrente, FP, η, classe, IP, etc)
+REGRA DA ESPECIFICAÇÃO — OBRIGATÓRIA:
 
-✔ SE for produto identificável:
-   → Buscar specs típicas do modelo
-   → Indicar marca/modelo se visível
-   → Listar características técnicas
+SEMPRE preencher campos técnicos. Se não conseguir
+ler da foto, INFERIR pelas características visuais
+do tipo de produto.
 
-✔ SE imagem ruim/genérica:
-   → Listar só o que dá pra ver
-   → Pedir foto melhor se necessário
+CAMPOS MÍNIMOS POR TIPO DE PRODUTO:
+
+🔌 DISJUNTOR / SECCIONADOR:
+- Corrente nominal (In): A
+- Tensão: V
+- Polos: 1P / 2P / 3P / 4P
+- Curva: B / C / D
+- Capacidade interrupção (Icu): kA
+- Norma: IEC/NBR
+- Tipo: termomagnético / motor / DR / DPS
+
+⚙️ MOTOR:
+- Potência: cv / kW
+- Tensão: V
+- Corrente nominal: A
+- Frequência: Hz
+- Rendimento (η): %
+- Fator de potência (FP)
+- Rotação: rpm
+- Carcaça: padrão IEC
+- IP: grau de proteção
+- Classe isolação: B / F / H
+
+🔋 TRANSFORMADOR:
+- Potência: kVA
+- Tensão primária / secundária
+- Impedância (Z%)
+- Tipo: óleo / seco
+- Refrigeração: ONAN / ONAF
+- Norma: NBR 5356
+
+📦 QUADRO ELÉTRICO:
+- Capacidade: nº módulos
+- Material: aço / PVC / fibra
+- IP: grau de proteção
+- Tipo: embutir / sobrepor
+- Norma: NBR IEC 60670
+
+🔥 PORTA-FUSÍVEL / SECCIONADOR:
+- Corrente nominal: A
+- Tensão de operação: V
+- Tipo de fusível: NH / D / NEOZED
+- Polos: 1P / 2P / 3P
+- Capacidade ruptura: kA
+- Norma: IEC 60269
+
+⚡ DPS:
+- Tipo: 1 / 2 / 3
+- Tensão Uc: V
+- Corrente descarga (In): kA
+- Iimp (Tipo 1): kA
+- Up (proteção): kV
+- Norma: IEC 61643
+
+🔌 DR:
+- Corrente nominal: A
+- Sensibilidade (IΔn): mA
+- Tipo: AC / A / F / B
+- Polos: 2P / 4P
+- Norma: NBR 5361
+
+REGRA: Sempre preencher 5-8 campos.
+Se não souber, marcar "(a confirmar)"
+mas NÃO omitir o campo.
+
+EXEMPLO COM PRODUTO POUCO VISÍVEL:
+
+📸 *ANÁLISE DA FOTO*
+
+*Identificado:* Seccionador porta-fusível Holec
+tipo NH (3 polos).
+
+*Especificações técnicas:*
+- *Corrente nominal:* 100-630A (a confirmar pelo modelo)
+- *Tensão de operação:* até 690V AC
+- *Polos:* 3P
+- *Tipo fusível:* NH (alta capacidade)
+- *Capacidade de ruptura:* 120kA
+- *Aplicação:* QGBT industrial
+- *Norma:* IEC 60269
+
+*Diagnóstico:*
+- Terminações expostas sem proteção
+- Sem identificação de fases
+
+*Recomendação:* Cobrir terminais com luvas isolantes,
+identificar fases e adicionar tampa frontal.
+
+⚠️ *Alerta:* Risco de choque elétrico em operação.
 
 ❌ NÃO inventar dados que não dá pra ver
 ❌ NÃO chutar specs sem confiança
