@@ -459,6 +459,28 @@ S(mm²) | B1   | B2  | C   | D   | E   | F
 240    | 546  | 463 | 590 | 451 | 552 | 760
 300    | 626  | 530 | 678 | 514 | 633 | 875
 
+RESISTÊNCIA E REATÂNCIA POR SEÇÃO (Cu, 30°C, fixos):
+
+S(mm²) | R(Ω/km) | X(Ω/km)
+─────────────────────────
+2,5    | 8,87    | 0,12
+4      | 5,52    | 0,11
+6      | 3,69    | 0,10
+10     | 2,19    | 0,09
+16     | 1,38    | 0,09
+25     | 0,87    | 0,08
+35     | 0,63    | 0,08
+50     | 0,46    | 0,08
+70     | 0,32    | 0,08
+95     | 0,23    | 0,08
+120    | 0,19    | 0,08
+150    | 0,15    | 0,08
+185    | 0,12    | 0,08
+240    | 0,094   | 0,08
+300    | 0,076   | 0,08
+
+REGRA: USE estes valores fixos. NÃO chute.
+
 (*) Métodos de instalação:
 A1 — Condutores isolados em eletroduto em parede termicamente isolante
 A2 — Cabo multipolar em eletroduto em parede termicamente isolante
@@ -2031,6 +2053,28 @@ ESTRUTURA:
 • [ação 3]
 
 📦 *MATERIAIS*
+REGRA DO BLOCO MATERIAIS:
+
+✔ APENAS itens compráveis (cabo, disjuntor, DR, DPS, etc)
+✔ Com quantidade
+❌ NÃO incluir parâmetros de cálculo (R, X, cosφ, L)
+❌ NÃO incluir valores teóricos
+❌ Se não houver material novo → OMITIR o bloco
+
+Exemplo ERRADO:
+📦 MATERIAIS
+* R70 ≈ 0,268 Ω/km
+* cosφ = 0,8
+* L = 80 m
+
+Exemplo CERTO (sem material):
+[bloco MATERIAIS omitido]
+
+Quando OMITIR o bloco MATERIAIS:
+- Cálculo de queda de tensão (verificação)
+- Conversão de unidades
+- Diagnóstico (sem troca de equipamento)
+- Pergunta conceitual
 
 • [item]: [qtd]
 • [item]: [qtd]
