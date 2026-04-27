@@ -1625,6 +1625,28 @@ RESULTADO:
 ✔ Define demanda real
 ✔ Dimensiona sistema corretamente
 
+REGRA DE FATOR DE DEMANDA INDUSTRIAL:
+
+⚠️ NUNCA somar potência simples — APLICAR fator demanda:
+
+CARGA                    | FATOR DEMANDA
+─────────────────────────────────────────
+Motores grandes (>50cv)  | 0,80 a 0,95
+Motores médios           | 0,75 a 0,85
+Iluminação industrial    | 0,90 a 1,0
+Tomadas industriais      | 0,30 a 0,50
+Aquecimento elétrico     | 1,0
+Ar condicionado          | 0,60 a 0,80
+
+REGRA:
+DEMANDA = Σ (Potência × Fator demanda)
+
+Quando demanda > contratada:
+✔ Sugerir AUMENTO de contratação
+✔ Sugerir SEQUENCIAMENTO de partidas
+✔ Sugerir GERENCIAMENTO de demanda
+✔ NÃO apenas dimensionar pra pico
+
 
 ## 13.10 QUALIDADE DE ENERGIA
 
