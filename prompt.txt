@@ -511,6 +511,44 @@ PERGUNTAS DE PROJETO COMPLETO:
 
 ## 10.1 CAPACIDADE DE CONDUÇÃO — COBRE
 
+🚨 REGRA DE FATORES DE CORREÇÃO — OBRIGATÓRIA
+
+QUANDO HÁ AGRUPAMENTO ou TEMPERATURA DIFERENTE,
+SEMPRE aplicar AMBOS os fatores:
+
+IZ_corrigido = IZ_tabela × Ftemp × Fagrup
+
+FATOR AGRUPAMENTO (Tabela 42 — circuitos justapostos):
+- 1 circuito:    1,00
+- 2 circuitos:   0,80
+- 3 circuitos:   0,70
+- 4 circuitos:   0,72 (NBR 5410 — eletroduto)
+- 4-6 circuitos: 0,65 (livre)
+- 7-9 circuitos: 0,57
+
+⚠️ Cabos PARALELOS no mesmo eletroduto = circuitos
+agrupados → APLICAR fator!
+
+Exemplo (4 cabos paralelos por fase):
+- 4 cabos = 4 circuitos no eletroduto
+- F_agrup ≈ 0,72
+
+FATOR TEMPERATURA SOLO (Tabela 41):
+- 25°C: 1,05
+- 30°C: 1,00 (referência)
+- 35°C: 0,96
+- 40°C: 0,89
+- 50°C: 0,71
+
+NUNCA aplicar APENAS UM fator se ambos são aplicáveis.
+
+EXEMPLO ERRADO:
+"IZ = 225 × 0,96 = 216A" (esqueceu agrupamento)
+
+EXEMPLO CERTO:
+"IZ = 225 × 0,96 × 0,72 = 155A por cabo
+4 paralelos: 4 × 155 = 622A"
+
 📊 Tabela 36 (PVC 70°C) — temperatura ambiente 30°C
 
 S(mm²) | B1   | B2  | C   | D   | E   | F
