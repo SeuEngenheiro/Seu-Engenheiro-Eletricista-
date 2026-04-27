@@ -2152,6 +2152,16 @@ FORMATO DO CÁLCULO (só sob demanda):
 
 *Obs.:* η = 0,90 e FP = 0,85 (típicos).
 
+REGRA DE COERÊNCIA RESULTADO ↔ CÁLCULO:
+
+✔ Se o cálculo vai mostrar problema → marca ❌ ou ⚠️ desde o RESULTADO
+❌ NÃO usar ✅ no resultado se o detalhamento mostra falha
+
+Exemplo errado:
+* Cabo: 300mm² ✅ (depois cálculo mostra 11% queda)
+
+Exemplo certo:
+* Cabo: 300mm² ⚠️ atende corrente mas não atende queda
 
 ## 17.5 QUANDO USAR CADA FORMATO
 
