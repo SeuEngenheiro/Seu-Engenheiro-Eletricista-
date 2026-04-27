@@ -13,7 +13,7 @@ import {
   jaProcessouMensagem,
   marcarMensagemProcessada
 } from '../lib/supabase.js';
-import { chamarClaude, analisarFoto, buscarPrecosIA } from '../lib/claude.js';
+import { chamarClaude, analisarFoto, buscarPrecosIA, transcreverAudio } from '../lib/claude.js';
 import { enviarMensagem } from '../lib/zapi.js';
 
 // ⚙️ Aumenta timeout do Vercel pra 60s (suficiente pra Claude responder)
@@ -74,7 +74,6 @@ export default async function handler(req, res) {
     // 🛡️ DEDUPLICAÇÃO ROBUSTA
     // ═══════════════════════════════════════════════════════════
 
-    // Pega ID real da Z-API (várias variações possíveis)
     const messageId = body.messageId || body.id || body.message?.id || body.key?.id;
 
     if (!messageId) {
@@ -82,24 +81,52 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true });
     }
 
-    // Verifica se já processou (Supabase persiste entre invocações)
     const jaProcessou = await jaProcessouMensagem(messageId);
     if (jaProcessou) {
       console.log(`[DEDUP] ${messageId} já processada — ignorando`);
       return res.status(200).json({ ok: true, dedup: true });
     }
 
-    // Marca como processada IMEDIATAMENTE
     await marcarMensagemProcessada(messageId);
 
     // ═══════════════════════════════════════════════════════════
-    // ⚙️ PROCESSAMENTO COM AWAIT (síncrono dentro do handler)
+    // ⚙️ DETECÇÃO DE TIPO (texto / áudio / imagem)
     // ═══════════════════════════════════════════════════════════
 
     const telefone = body.phone?.replace(/\D/g, '');
-    const mensagem = (body.text?.message || body.caption || '').trim();
     const nome = body.senderName || 'Usuário';
     const temImagem = !!(body.image || body.imageMessage);
+    const temAudio = !!(body.audio || body.audioMessage);
+
+    let mensagem = (body.text?.message || body.caption || '').trim();
+
+    // ═══ TRANSCRIÇÃO DE ÁUDIO ═══
+    if (temAudio && !mensagem) {
+      try {
+        const audioUrl = body.audio?.audioUrl || body.audioMessage?.url;
+        const audioBase64 = body.audio?.base64 || body.audioMessage?.base64;
+        const mimeType = body.audio?.mimeType || 'audio/ogg';
+
+        let audioBuffer;
+        if (audioBase64) {
+          audioBuffer = Buffer.from(audioBase64, 'base64');
+        } else if (audioUrl) {
+          const audioRes = await fetch(audioUrl);
+          audioBuffer = Buffer.from(await audioRes.arrayBuffer());
+        } else {
+          throw new Error('Áudio sem URL ou base64');
+        }
+
+        console.log('[AUDIO] Transcrevendo áudio...');
+        mensagem = await transcreverAudio(audioBuffer, mimeType);
+        console.log('[AUDIO] Transcrição:', mensagem);
+
+      } catch (err) {
+        console.error('[ERRO AUDIO]', err);
+        await enviarMensagem(telefone, `Não consegui entender o áudio. Pode digitar a pergunta?`);
+        return res.status(200).json({ ok: true });
+      }
+    }
 
     if (!telefone || (!mensagem && !temImagem)) {
       return res.status(200).json({ ok: true });
@@ -140,7 +167,9 @@ export default async function handler(req, res) {
       }
     }
 
-    await registrarConversa(telefone, mensagem, 'usuario');
+    // Registra conversa (com flag de áudio se aplicável)
+    const prefixoAudio = temAudio ? '[áudio] ' : '';
+    await registrarConversa(telefone, prefixoAudio + mensagem, 'usuario');
     const msg = mensagem.toLowerCase().trim();
 
     // ═══ BOAS-VINDAS ═══
