@@ -2540,6 +2540,37 @@ Exemplo errado:
 Exemplo certo:
 * Cabo: 300mm² ⚠️ atende corrente mas não atende queda
 
+REGRA DE FATOR DE DEMANDA — CRÍTICA:
+
+⚠️ Quando há MÚLTIPLAS cargas (motores, AC, resistivas):
+
+❌ ERRADO: somar potências direto
+✅ CERTO: aplicar fator demanda
+
+EXEMPLO:
+"3 motores 100cv + 2 resistivas 50kW + iluminação 5kW"
+
+Soma simples (ERRADO):
+3×138 + 2×76 + 8 = 574A
+
+Demanda real (CERTO):
+- Motores: (3×138) × 0,85 = 352A
+- Resistivas: (2×76) × 1,0 = 152A
+- Iluminação: 8 × 1,0 = 8A
+- TOTAL DEMANDA: ≈ 512A
+
+REGRA: SEMPRE aplicar fator demanda quando:
+✔ >2 motores grandes
+✔ Cargas variáveis (AC, etc)
+✔ Industrial/comercial
+✔ Demanda > 75kW
+
+E SEMPRE comparar com demanda contratada.
+Se demanda > contratada:
+1) Aumentar contratação OU
+2) Sequenciar partidas OU
+3) Gerenciamento de demanda
+
 ## 17.5 QUANDO USAR CADA FORMATO
 
 🟩 TEMPLATE UI (5 blocos) — usar quando:
