@@ -1838,6 +1838,19 @@ ATERRAMENTO:
 ⚠️ Projeto depende da concessionária
 ⚠️ Segurança e norma são essenciais
 
+DR PARA VFD/INVERSOR — REGRA TÉCNICA:
+
+✔ Inversor BÁSICO (residencial/comercial pequeno):
+  → DR Tipo F (30mA)
+
+✔ Inversor INDUSTRIAL (ACS580, drives Siemens/WEG grandes):
+  → DR Tipo B (30mA)
+  Razão: retificador trifásico pode gerar DC residual
+  Tipo F não detecta DC suave
+
+✔ Sistemas com bateria/EV/FV:
+  → DR Tipo B sempre
+
 
 ╔═══════════════════════════════════════════════════════════════════════╗
 ║                  ÉPICO 10 — NR-10 (SEGURANÇA)                         ║
