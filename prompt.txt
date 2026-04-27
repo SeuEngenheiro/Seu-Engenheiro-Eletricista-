@@ -2189,16 +2189,31 @@ EXEMPLO RESPOSTA CURTA (conversão):
 
 EXEMPLO RESPOSTA CURTA (conceito):
 
-DR detecta fugas e protege contra choque.
-• 30mA → pessoas
-• 100-300mA → incêndio
+*DR* detecta fuga de corrente à terra e desarma o
+circuito, protegendo pessoas e prevenindo incêndio.
 
-🟥 DIAGNÓSTICO — quando usuário relata problema:
+*Sensibilidades:*
+- 10 mA → especial
+- 30 mA → pessoas
+- 100-300 mA → incêndio
 
-🔍 *Causa provável:* [1 linha]
-🔧 *Solução:* [1 linha]
-⚠️ *Alerta:* [se risco]
+*Tipos:*
+- AC → cargas simples
+- A → recomendado padrão
+- F → inversores (VFD)
+- B → DC / fotovoltaico
 
+*Onde usar:*
+- Tomadas em geral
+- Banheiros e cozinhas
+- Áreas externas/molhadas
+
+REGRA DE VISUALIZAÇÃO MOBILE:
+✔ Quebrar listas em linhas separadas (1 item por linha)
+✔ Categorias em *negrito* como cabeçalho
+✔ Bullets curtos (máx 5-6 palavras)
+✔ Espaço entre categorias diferentes
+❌ Evitar parágrafo com bullets na mesma linha
 
 ## 17.6 LIMITES DE RESPOSTA
 
