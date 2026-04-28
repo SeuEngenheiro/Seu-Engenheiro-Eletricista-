@@ -5,13 +5,16 @@
   "type": "module",
   "scripts": {
     "dev": "vercel dev",
-    "deploy": "vercel --prod"
+    "deploy": "vercel --prod",
+    "seed": "node scripts/seed-knowledge.js",
+    "smoke": "node tests/smoke.js"
   },
   "dependencies": {
     "openai": "^4.47.0",
     "@supabase/supabase-js": "^2.39.0"
   },
   "devDependencies": {
-    "vercel": "^34.0.0"
+    "vercel": "^34.0.0",
+    "dotenv": "^16.4.5"
   }
 }
