@@ -202,7 +202,7 @@ export default async function handler(req, res) {
     }
 
     // ═══ PLANOS ═══
-    if (/\b(ver planos|quero assinar|assinar plano|assinar|upgrade|quanto custa|contratar)\b/i.test(msg)) {
+    if (/\b(planos?|ver\s+planos|valores|pre[çc]os?|quanto\s+custa|qual\s+o\s+(valor|pre[çc]o)|quero\s+assinar|assinar(\s+plano)?|upgrade|contratar|fazer\s+upgrade)\b/i.test(msg)) {
       await enviarMensagem(telefone, MSG_PLANOS);
       await registrarConversa(telefone, MSG_PLANOS, 'agente');
       return res.status(200).json({ ok: true });

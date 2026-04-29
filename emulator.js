@@ -47,7 +47,7 @@ Indicado pra uso profissional e projetos.
 ━━━━━━━━━━━━━━━━━━━━━━━━
 ✅ Pronto pra começar? Assine um plano agora.`;
 
-const REGEX_PLANOS = /\b(ver\s+planos|planos|quanto\s+custa|qual\s+o\s+valor|qual\s+o\s+pre[çc]o|quero\s+assinar|assinar(\s+plano)?|upgrade|contratar|valores|precos|preços)\b/i;
+const REGEX_PLANOS = /\b(planos?|ver\s+planos|valores|pre[çc]os?|quanto\s+custa|qual\s+o\s+(valor|pre[çc]o)|quero\s+assinar|assinar(\s+plano)?|upgrade|contratar|fazer\s+upgrade)\b/i;
 
 const server = http.createServer(async (req, res) => {
   if (req.method === 'GET' && req.url === '/') {
