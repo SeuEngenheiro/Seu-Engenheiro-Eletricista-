@@ -27,8 +27,30 @@ const TEMPO_SESSAO = 8 * 60 * 60 * 1000;
 function jaEnviouBoasVindas(t) { const ts = boasVindasEnviadas.get(t); return ts && Date.now() - ts < TEMPO_SESSAO; }
 function marcarBoasVindas(t) { boasVindasEnviadas.set(t, Date.now()); }
 
+// Detecta saudações com flexibilidade (com ou sem pontuação, com complemento)
 function isOla(msg) {
-  return ['oi','olá','ola','oi!','olá!','menu','inicio','início','começar','comecar','start','bom dia','boa tarde','boa noite'].includes(msg.toLowerCase().trim());
+  const m = msg.toLowerCase().trim();
+  return /^(oi|ol[aá]|hey|hello|e\s*a[íi]|salve|fala|bom\s+dia|boa\s+tarde|boa\s+noite|menu|in[íi]cio|come[çc]ar|start)\b/.test(m);
+}
+
+// Identifica qual tipo de saudação foi usada pra ecoar de volta
+function obterSaudacao(msg) {
+  const m = msg.toLowerCase();
+  if (m.includes('bom dia')) return 'Bom dia';
+  if (m.includes('boa tarde')) return 'Boa tarde';
+  if (m.includes('boa noite')) return 'Boa noite';
+  return 'Olá';
+}
+
+// Monta a mensagem de boas-vindas usando a saudação detectada
+function montarBoasVindas(plano, saudacao) {
+  if (plano === 'premium') {
+    return `🔴 *PREMIUM — nível engenheiro*\n\n${saudacao}! Ótimo ter você aqui 👷\n\nAcesso total — cálculos, projetos, fotos, preços atualizados, histórico e suporte!\n\n✅ Acesso total liberado — sem limites!`;
+  }
+  if (plano === 'pro') {
+    return `⚡ *PROFISSIONAL ativo — ilimitado*\n\n${saudacao}! Que bom que você está aqui 👷\n\nPerguntas ilimitadas, cálculo passo a passo e lista de materiais!\n\n💡 Quer fotos, preços atualizados e análise de projeto?\n🔴 *PREMIUM R$ 49,99/mês*: https://pay.kiwify.com.br/Mns2lfH`;
+  }
+  return `👷‍♂️⚡ ${saudacao}! Eu sou o SEU ENGENHEIRO AI\n\nPosso te ajudar com qualquer dúvida ou problema elétrico, sempre seguindo as normas (NBR 5410 / NR-10).\n\n🟢 *Plano Gratuito:* 20 perguntas/mês\n\nO que você precisa?`;
 }
 function ehCalculo(msg) {
   return /\b(calcul|dimens|corrente|queda.*tens|disjuntor|cabo\s*(para|de|mm)|motor|chuveiro|transformador|potência|capacitor|iluminância|\d+\s*(kva|kw|cv|hp|w)|\d+\s*v\s*(tri|mono|bi))\b/i.test(msg);
@@ -173,13 +195,14 @@ export default async function handler(req, res) {
     const msg = mensagem.toLowerCase().trim();
 
     // ═══ BOAS-VINDAS ═══
+    // SEMPRE responde a saudações (sem cooldown) ecoando a saudação do usuário.
+    // Garante que NUNCA caia no LLM e gere texto inventado.
     if (isOla(mensagem)) {
-      if (!jaEnviouBoasVindas(telefone)) {
-        marcarBoasVindas(telefone);
-        const texto = plano === 'premium' ? BOAS_VINDAS_PREMIUM : plano === 'pro' ? BOAS_VINDAS_PRO : BOAS_VINDAS_GRATIS;
-        await enviarMensagem(telefone, texto);
-        await registrarConversa(telefone, texto, 'agente');
-      }
+      marcarBoasVindas(telefone);
+      const saudacao = obterSaudacao(mensagem);
+      const texto = montarBoasVindas(plano, saudacao);
+      await enviarMensagem(telefone, texto);
+      await registrarConversa(telefone, texto, 'agente');
       return res.status(200).json({ ok: true });
     }
 
