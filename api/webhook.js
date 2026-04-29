@@ -68,6 +68,24 @@ function ehOutraNorma(msg) {
   return /\b(nr-10|nr10|nr-12|nr12|nr-33|nr33|nr-35|nr35|nbr\s*5419|nbr5419|nbr\s*5413|nbr5413|nbr\s*14039|nbr14039)\b/i.test(msg);
 }
 
+// Detecta pergunta "qual é meu plano atual" (precisa rodar ANTES de ehPlanos pra não confundir)
+function ehPlanoAtual(msg) {
+  return /\b(meu\s+plano|plano\s+atual|qual\s+(é|e|o|eh)\s+(o\s+)?meu\s+plano|que\s+plano\s+(eu\s+)?(tenho|uso|estou)|estou\s+(em\s+|no\s+)?(qual\s+)?plano|verificar\s+(o\s+)?(meu\s+)?plano|quanto\s+(eu\s+)?(falta|tenho|sobr)|ver\s+meu\s+plano|saber\s+(o\s+)?meu\s+plano)\b/i.test(msg);
+}
+
+// Monta resposta sobre o plano atual do usuário
+function montarPlanoAtual(plano, restantes) {
+  if (plano === 'premium') {
+    return `📊 *Seu plano atual: 🔴 PREMIUM*\n\n✅ Acesso total liberado — sem limites:\n• Perguntas ilimitadas\n• 📷 Análise de fotos (até 30/dia)\n• 💰 Lista com preços atualizados\n• 📜 Histórico completo\n• 🏗️ Análise de projeto\n\nAproveite!`;
+  }
+  if (plano === 'pro') {
+    return `📊 *Seu plano atual: 🔵 PROFISSIONAL*\n\n✅ Recursos ativos:\n• Perguntas ilimitadas\n• Cálculo passo a passo\n• Dimensionamento detalhado\n• Lista de materiais (sem preços)\n• Especificação técnica\n\n💡 Quer fotos + preços atualizados + histórico + análise de projeto?\n🔴 Faça upgrade pro *PREMIUM* (R$ 49,99/mês):\n👉 https://pay.kiwify.com.br/Mns2lfH`;
+  }
+  // Grátis
+  const usados = 20 - (restantes ?? 20);
+  return `📊 *Seu plano atual: 🟢 GRATUITO*\n\n• 20 perguntas/mês — usadas: *${usados}/20*\n• Resposta técnica padrão\n• Direcionamento conforme NBR 5410\n\n💡 Quer perguntas ilimitadas + cálculos detalhados?\n🔵 *PROFISSIONAL* (R$ 24,99/mês):\n👉 https://pay.kiwify.com.br/mVAGqLU\n\n🔴 *PREMIUM* (R$ 49,99/mês):\n👉 https://pay.kiwify.com.br/Mns2lfH`;
+}
+
 const BOAS_VINDAS_GRATIS = `👷‍♂️⚡ Olá! Eu sou o SEU ENGENHEIRO AI\n\nPosso te ajudar com qualquer dúvida ou problema elétrico, sempre seguindo as normas (NBR 5410 / NR-10).\n\n🟢 *Plano Gratuito:* 20 perguntas/mês\n\nO que você precisa?`;
 const BOAS_VINDAS_PRO = `⚡ *PROFISSIONAL ativo — ilimitado*\n\nOi! Que bom que você está aqui 👷\n\nPerguntas ilimitadas, cálculo passo a passo e lista de materiais!\n\n💡 Quer fotos, preços atualizados e análise de projeto?\n🔴 *PREMIUM R$ 49,99/mês*: https://pay.kiwify.com.br/Mns2lfH`;
 const BOAS_VINDAS_PREMIUM = `🔴 *PREMIUM — nível engenheiro*\n\nOi! Ótimo ter você aqui 👷\n\nAcesso total — cálculos, projetos, fotos, preços atualizados, histórico e suporte!\n\n✅ Acesso total liberado — sem limites!`;
@@ -221,6 +239,15 @@ export default async function handler(req, res) {
       historico.forEach((c, i) => { resp += `${i+1}. *${c.tipo_calculo||'Cálculo'}* — ${new Date(c.realizado_em).toLocaleDateString('pt-BR')}\n`; });
       await enviarMensagem(telefone, resp);
       await registrarConversa(telefone, resp, 'agente');
+      return res.status(200).json({ ok: true });
+    }
+
+    // ═══ PLANO ATUAL DO USUÁRIO ═══ (vem ANTES de PLANOS pra capturar "qual meu plano")
+    if (ehPlanoAtual(msg)) {
+      const lim = await verificarLimiteCalculos(telefone);
+      const texto = montarPlanoAtual(plano, lim.restantes);
+      await enviarMensagem(telefone, texto);
+      await registrarConversa(telefone, texto, 'agente');
       return res.status(200).json({ ok: true });
     }
 

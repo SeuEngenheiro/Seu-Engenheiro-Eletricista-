@@ -49,6 +49,18 @@ Indicado pra uso profissional e projetos.
 
 const REGEX_PLANOS = /\b(planos?|ver\s+planos|valores|pre[çc]os?|quanto\s+custa|qual\s+o\s+(valor|pre[çc]o)|quero\s+assinar|assinar(\s+plano)?|upgrade|contratar|fazer\s+upgrade)\b/i;
 
+const REGEX_PLANO_ATUAL = /\b(meu\s+plano|plano\s+atual|qual\s+(é|e|o|eh)\s+(o\s+)?meu\s+plano|que\s+plano\s+(eu\s+)?(tenho|uso|estou)|estou\s+(em\s+|no\s+)?(qual\s+)?plano|verificar\s+(o\s+)?(meu\s+)?plano|ver\s+meu\s+plano|saber\s+(o\s+)?meu\s+plano)\b/i;
+
+function montarPlanoAtual(plano) {
+  if (plano === 'premium') {
+    return `📊 *Seu plano atual: 🔴 PREMIUM*\n\n✅ Acesso total liberado — sem limites:\n• Perguntas ilimitadas\n• 📷 Análise de fotos (até 30/dia)\n• 💰 Lista com preços atualizados\n• 📜 Histórico completo\n• 🏗️ Análise de projeto\n\nAproveite!`;
+  }
+  if (plano === 'pro') {
+    return `📊 *Seu plano atual: 🔵 PROFISSIONAL*\n\n✅ Recursos ativos:\n• Perguntas ilimitadas\n• Cálculo passo a passo\n• Dimensionamento detalhado\n• Lista de materiais (sem preços)\n• Especificação técnica\n\n💡 Quer fotos + preços atualizados + histórico + análise de projeto?\n🔴 Faça upgrade pro *PREMIUM* (R$ 49,99/mês):\n👉 https://pay.kiwify.com.br/Mns2lfH`;
+  }
+  return `📊 *Seu plano atual: 🟢 GRATUITO*\n\n• 20 perguntas/mês\n• Resposta técnica padrão\n• Direcionamento conforme NBR 5410\n\n💡 Quer perguntas ilimitadas + cálculos detalhados?\n🔵 *PROFISSIONAL* (R$ 24,99/mês):\n👉 https://pay.kiwify.com.br/mVAGqLU\n\n🔴 *PREMIUM* (R$ 49,99/mês):\n👉 https://pay.kiwify.com.br/Mns2lfH`;
+}
+
 const server = http.createServer(async (req, res) => {
   if (req.method === 'GET' && req.url === '/') {
     const html = readFileSync(HTML_PATH, 'utf-8');
@@ -64,6 +76,14 @@ const server = http.createServer(async (req, res) => {
       try {
         const { telefone, mensagem, plano } = JSON.parse(body);
         const inicio = Date.now();
+
+        // Bypass do LLM — plano atual do usuário (vem ANTES do regex de planos)
+        if (REGEX_PLANO_ATUAL.test(mensagem)) {
+          const ms = Date.now() - inicio;
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ resposta: montarPlanoAtual(plano || 'gratis'), ms }));
+          return;
+        }
 
         // Bypass do LLM pra perguntas sobre planos — resposta fixa garante
         // que os links nunca sejam alterados pelo modelo
