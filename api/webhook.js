@@ -46,15 +46,15 @@ function ehOutraNorma(msg) {
   return /\b(nr-10|nr10|nr-12|nr12|nr-33|nr33|nr-35|nr35|nbr\s*5419|nbr5419|nbr\s*5413|nbr5413|nbr\s*14039|nbr14039)\b/i.test(msg);
 }
 
-const BOAS_VINDAS_GRATIS = `🆓 *5 cálculos grátis/dia*\n\n⚡ IA ESPECIALIZADA EM ELÉTRICA\n \n🏅 Desenvolvida por Engenheiro (CREA)\n \n⚠️ Não substitui projeto técnico com ART quando exigido.\n \n👇 Como posso te ajudar?`;
-const BOAS_VINDAS_PRO = `⚡ *PRO ativo — ilimitado*\n\nOi! Que bom que você está aqui 👷\n\nCálculos ilimitados, diagnóstico, normas e análise de fotos!\n\n💡 Quer projeto detalhado, materiais com preços e suporte?\n👑 *PREMIUM R$39,99/mês*: https://pay.kiwify.com.br/9SShnKM`;
-const BOAS_VINDAS_PREMIUM = `👑 *PREMIUM — nível engenheiro*\n\nOi! Ótimo ter você aqui 👷\n\nAcesso total — cálculos, projetos, fotos, materiais com preços e suporte!\n\n✅ Acesso total liberado — sem limites!`;
+const BOAS_VINDAS_GRATIS = `👷‍♂️⚡ Olá! Eu sou o SEU ENGENHEIRO AI\n\nPosso te ajudar com qualquer dúvida ou problema elétrico, sempre seguindo as normas (NBR 5410 / NR-10).\n\n🟢 *Plano Gratuito:* 20 perguntas/mês\n\nO que você precisa?`;
+const BOAS_VINDAS_PRO = `⚡ *PROFISSIONAL ativo — ilimitado*\n\nOi! Que bom que você está aqui 👷\n\nPerguntas ilimitadas, cálculo passo a passo e lista de materiais!\n\n💡 Quer fotos, preços atualizados e análise de projeto?\n🔴 *PREMIUM R$ 49,99/mês*: https://pay.kiwify.com.br/Mns2lfH`;
+const BOAS_VINDAS_PREMIUM = `🔴 *PREMIUM — nível engenheiro*\n\nOi! Ótimo ter você aqui 👷\n\nAcesso total — cálculos, projetos, fotos, preços atualizados, histórico e suporte!\n\n✅ Acesso total liberado — sem limites!`;
 
-const MSG_LIMITE_CALCULOS = `⚠️ Você atingiu o limite de *5 cálculos diários* do plano gratuito.\n\nPara continuar sem limites:\n\n💳 *Planos Engenheiro Eletricista AI*\n\n━━━━━━━━━━━━━━━\n🆓 *GRÁTIS — R$0*\n• 5 cálculos/dia · 5 perguntas/dia\n• NBR 5410 incluída\n\n━━━━━━━━━━━━━━━\n⚡ *PRO — R$19,99/mês*\n• Cálculos ilimitados\n• Diagnóstico automático\n• Normas completas\n• Análise de fotos (20/dia)\n👉 https://pay.kiwify.com.br/3klvFH6\n\n━━━━━━━━━━━━━━━\n👑 *PREMIUM — R$39,99/mês*\n• Tudo do PRO\n• Lista de materiais com preços\n• Projeto detalhado\n• Histórico completo\n• Análise de fotos ilimitada\n• Suporte especialista\n• Garantia 7 dias 🔒\n👉 https://pay.kiwify.com.br/9SShnKM`;
+const MSG_LIMITE_CALCULOS = `⚠️ Você atingiu o limite de *20 perguntas/mês* do plano gratuito.\n\nPra continuar sem limites:\n\n📊 *Planos — Seu Engenheiro AI*\n\n━━━━━━━━━━━━━━━━━━━━━━━━\n🔵 *Plano Profissional — R$ 24,99/mês*\n• Perguntas ilimitadas\n• Cálculos ilimitados\n• Dimensionamento detalhado\n• Lista de materiais (SEM PREÇOS)\n• Especificação técnica de materiais\n👉 https://pay.kiwify.com.br/mVAGqLU\n\n━━━━━━━━━━━━━━━━━━━━━━━━\n🔴 *Plano Premium — R$ 49,99/mês*\n• Tudo do Profissional\n• 💰 Lista de materiais (COM PREÇOS)\n• 📷 Análise de fotos ilimitada\n• 📜 Histórico completo acessível\n• 🏗️ Análise de projeto (fotos + planta)\n👉 https://pay.kiwify.com.br/Mns2lfH\n\n━━━━━━━━━━━━━━━━━━━━━━━━\n✅ Pronto pra começar? Assine um plano agora.`;
 
-const MSG_LIMITE_PERGUNTAS = `⚠️ Você atingiu o limite de *5 perguntas técnicas diárias* do plano gratuito.\n\n⚡ PRO: https://pay.kiwify.com.br/3klvFH6\n👑 PREMIUM: https://pay.kiwify.com.br/9SShnKM`;
-const MSG_NORMA_BLOQUEADA = `📋 Outras normas disponíveis nos planos *PRO* e *PREMIUM*.\n\nNo grátis: *NBR 5410* incluída.\n\n⚡ PRO: https://pay.kiwify.com.br/3klvFH6\n👑 PREMIUM: https://pay.kiwify.com.br/9SShnKM`;
-const MSG_PLANOS = `💳 *Planos Engenheiro Eletricista AI*\n\n━━━━━━━━━━━━━━━\n🆓 *GRÁTIS — R$0*\n• 5 cálculos/dia · 5 perguntas/dia\n• NBR 5410 incluída · Acesso 24h\n\n━━━━━━━━━━━━━━━\n⚡ *PRO — R$19,99/mês*\n• Cálculos ilimitados\n• Diagnóstico automático\n• Normas completas\n• Análise de fotos (20/dia)\n👉 https://pay.kiwify.com.br/3klvFH6\n\n━━━━━━━━━━━━━━━\n👑 *PREMIUM — R$39,99/mês*\n• Tudo do PRO\n• Lista de materiais com preços atualizados\n• Projeto elétrico detalhado\n• Histórico completo\n• Análise de fotos ilimitada\n• Suporte com especialista\n• Garantia 7 dias 🔒\n👉 https://pay.kiwify.com.br/9SShnKM\n━━━━━━━━━━━━━━━`;
+const MSG_LIMITE_PERGUNTAS = `⚠️ Você atingiu o limite de *20 perguntas/mês* do plano gratuito.\n\n🔵 PROFISSIONAL: https://pay.kiwify.com.br/mVAGqLU\n🔴 PREMIUM: https://pay.kiwify.com.br/Mns2lfH`;
+const MSG_NORMA_BLOQUEADA = `📋 Outras normas disponíveis nos planos *PROFISSIONAL* e *PREMIUM*.\n\nNo grátis: *NBR 5410* incluída.\n\n🔵 PROFISSIONAL: https://pay.kiwify.com.br/mVAGqLU\n🔴 PREMIUM: https://pay.kiwify.com.br/Mns2lfH`;
+const MSG_PLANOS = `📊 *Planos — Seu Engenheiro AI*\n\n━━━━━━━━━━━━━━━━━━━━━━━━\n🟢 *Plano Gratuito — R$ 0*\n• 20 perguntas / mês\n• Resposta técnica padrão (modo curto)\n• Direcionamento conforme NBR 5410\n\nIndicado pra dúvidas simples e consultas rápidas.\n\n━━━━━━━━━━━━━━━━━━━━━━━━\n🔵 *Plano Profissional — R$ 24,99/mês*\n• Perguntas ilimitadas\n• Cálculos ilimitados\n• Dimensionamento detalhado\n• Lista de materiais (SEM PREÇOS)\n• Especificação técnica de materiais\n\nIndicado pra quem executa serviços.\n\n👉 https://pay.kiwify.com.br/mVAGqLU\n\n━━━━━━━━━━━━━━━━━━━━━━━━\n🔴 *Plano Premium — R$ 49,99/mês*\n• Tudo do Profissional\n• 💰 Lista de materiais (COM PREÇOS)\n• 📷 Análise de fotos ilimitada\n• 📜 Histórico completo acessível\n• 🏗️ Análise de projeto (fotos + planta)\n\nIndicado pra uso profissional e projetos.\n\n👉 https://pay.kiwify.com.br/Mns2lfH\n\n━━━━━━━━━━━━━━━━━━━━━━━━\n✅ Pronto pra começar? Assine um plano agora.`;
 
 // ═══════════════════════════════════════════════════════════════
 // HANDLER PRINCIPAL — processa SINCRONICAMENTE com await
@@ -139,9 +139,9 @@ export default async function handler(req, res) {
     if (temImagem) {
       const limFoto = await verificarLimiteFotos(telefone, plano);
       if (!limFoto.permitido) {
-        const msg = plano === 'gratis'
-          ? `📸 Análise de fotos disponível nos planos *PRO* e *PREMIUM*.\n\n⚡ PRO: https://pay.kiwify.com.br/3klvFH6\n👑 PREMIUM: https://pay.kiwify.com.br/9SShnKM`
-          : `⚠️ Limite de *20 fotos diárias* do PRO atingido.\n\n👑 PREMIUM tem fotos ilimitadas!\n👉 https://pay.kiwify.com.br/9SShnKM`;
+        const msg = plano !== 'premium'
+          ? `📸 Análise de fotos disponível APENAS no plano *PREMIUM*.\n\n🔴 PREMIUM (R$ 49,99/mês): https://pay.kiwify.com.br/Mns2lfH`
+          : `⚠️ Limite de *30 fotos diárias* do PREMIUM atingido.\n\nVolte amanhã ou aguarde o reset à meia-noite.`;
         await enviarMensagem(telefone, msg);
         return res.status(200).json({ ok: true });
       }
@@ -186,7 +186,7 @@ export default async function handler(req, res) {
     // ═══ HISTÓRICO ═══
     if (/^(histórico|historico|meus cálculos|meus calculos)$/.test(msg)) {
       if (plano !== 'premium') {
-        await enviarMensagem(telefone, `Histórico disponível no plano *PREMIUM*.\n\n👑 https://pay.kiwify.com.br/9SShnKM`);
+        await enviarMensagem(telefone, `Histórico disponível no plano *PREMIUM*.\n\n🔴 https://pay.kiwify.com.br/Mns2lfH`);
         return res.status(200).json({ ok: true });
       }
       const historico = await buscarHistorico(telefone, 10);
