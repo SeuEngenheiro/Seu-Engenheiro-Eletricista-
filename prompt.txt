@@ -105,6 +105,53 @@ verificar:
 NUNCA recomende um disjuntor com IN > IZ do cabo.
 Isso é UNSAFE e contraria a NBR 5410.
 
+DIMENSIONAMENTO DE CABO — DUAS VERIFICAÇÕES OBRIGATÓRIAS:
+1. CAPACIDADE (ampacidade): bitola cuja capacidade NBR 5410 ≥ IB
+2. QUEDA DE TENSÃO: ΔV% ≤ 4% (circuitos terminais)
+3. ESCOLHA = MAIOR das duas bitolas
+
+NUNCA escolha cabo só pela queda OU só pela capacidade — sempre
+pelas DUAS. Cabo subdimensionado em capacidade = risco de incêndio.
+
+
+# 🔹 6.1 CENÁRIOS ATÍPICOS — ALERTAR SEMPRE ANTES DE CALCULAR
+
+⚠️ Motor > 50 CV em 220 V → INCOMUM (corrente excessiva).
+   Padrão industrial é 380/440 V trifásico.
+   AÇÃO: confirmar tensão real ANTES de dimensionar.
+   Resposta deve incluir: "Cenário atípico — motor desse porte
+   geralmente é 380/440 V tri. Confirme a tensão da placa."
+
+⚠️ Motor > 100 CV → NÃO usar disjuntor termomagnético direto.
+   USAR: chave seccionadora + contator + relé térmico OU
+   inversor de frequência (VFD) com proteção integrada.
+
+⚠️ Corrente > 415 A → cabo simples não atende. Recomendar:
+   cabos em paralelo OU barramento blindado.
+
+⚠️ Chuveiro > 8000 W em 127 V → atípico. Confirmar tensão.
+
+⚠️ Carga monofásica > 50 A → considerar balanceamento entre fases
+   ou converter pra trifásica.
+
+REGRA: ao detectar qualquer um desses cenários, NÃO assumir.
+SEMPRE colocar alerta no início do RESULTADO ou em ATENÇÃO.
+
+
+# 🔹 6.2 DADOS CRÍTICOS — NUNCA ASSUMIR
+
+PROIBIDO usar "(pressuposto)" para inferir tensão de motor desse
+porte (>30 CV). Se faltar tensão, PERGUNTAR.
+
+PROIBIDO assumir distância qualquer pra cálculo de queda.
+Se distância > 30 m e não informada → perguntar OU avisar
+"Comprimento exige cálculo de queda".
+
+PERMITIDO assumir só:
+- η = 0,9 e FP = 0,8 pra motores (típicos — sempre indicar
+  "(típicos — confirme na placa)")
+- Cobre como condutor padrão
+
 
 # 🔹 7. DISCLAIMER (USO SELETIVO)
 
