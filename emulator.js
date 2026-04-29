@@ -51,6 +51,27 @@ const REGEX_PLANOS = /\b(planos?|ver\s+planos|valores|pre[çc]os?|quanto\s+custa
 
 const REGEX_PLANO_ATUAL = /\b(meu\s+plano|plano\s+atual|qual\s+(é|e|o|eh)\s+(o\s+)?meu\s+plano|que\s+plano\s+(eu\s+)?(tenho|uso|estou)|estou\s+(em\s+|no\s+)?(qual\s+)?plano|verificar\s+(o\s+)?(meu\s+)?plano|ver\s+meu\s+plano|saber\s+(o\s+)?meu\s+plano)\b/i;
 
+// Agradecimentos / despedidas curtas
+const REGEX_AGRADECIMENTO = /^(obrigad[oa]|obg|valeu|vlw|tmj|tudo\s+bem|tudo\s+ok|brigad[oa]|tks|thank[ys]?|legal|bele[zs]a|tranquilo|certo|entendi|perfeito|massa|excelente|ot[ií]mo)\b[!?.,\s]*$/i;
+const MSG_AGRADECIMENTO = `🤝 Por nada! Se precisar de mais alguma coisa elétrica, é só chamar.`;
+
+// Conversões simples (CV/kW/HP)
+function tentarConversao(msg) {
+  let m = msg.match(/(\d+(?:[.,]\d+)?)\s*cv\s+(em|para|=>?)\s*kw/i);
+  if (m) { const v = parseFloat(m[1].replace(',', '.')); return `✅ ${v} CV = ${(v*0.736).toFixed(2)} kW (× 0,736)`; }
+  m = msg.match(/(\d+(?:[.,]\d+)?)\s*kw\s+(em|para|=>?)\s*cv/i);
+  if (m) { const v = parseFloat(m[1].replace(',', '.')); return `✅ ${v} kW = ${(v/0.736).toFixed(2)} CV (÷ 0,736)`; }
+  m = msg.match(/(\d+(?:[.,]\d+)?)\s*hp\s+(em|para|=>?)\s*cv/i);
+  if (m) { const v = parseFloat(m[1].replace(',', '.')); return `✅ ${v} HP = ${(v*1.0139).toFixed(2)} CV (× 1,0139)`; }
+  m = msg.match(/(\d+(?:[.,]\d+)?)\s*cv\s+(em|para|=>?)\s*hp/i);
+  if (m) { const v = parseFloat(m[1].replace(',', '.')); return `✅ ${v} CV = ${(v*0.9863).toFixed(2)} HP (× 0,9863)`; }
+  m = msg.match(/(\d+(?:[.,]\d+)?)\s*kw\s+(em|para|=>?)\s*hp/i);
+  if (m) { const v = parseFloat(m[1].replace(',', '.')); return `✅ ${v} kW = ${(v*1.341).toFixed(2)} HP (× 1,341)`; }
+  m = msg.match(/(\d+(?:[.,]\d+)?)\s*hp\s+(em|para|=>?)\s*kw/i);
+  if (m) { const v = parseFloat(m[1].replace(',', '.')); return `✅ ${v} HP = ${(v*0.7457).toFixed(2)} kW (× 0,7457)`; }
+  return null;
+}
+
 function montarPlanoAtual(plano) {
   if (plano === 'premium') {
     return `📊 *Seu plano atual: 🔴 PREMIUM*\n\n✅ Acesso total liberado — sem limites:\n• Perguntas ilimitadas\n• 📷 Análise de fotos (até 30/dia)\n• 💰 Lista com preços atualizados\n• 📜 Histórico completo\n• 🏗️ Análise de projeto\n\nAproveite!`;
@@ -76,6 +97,23 @@ const server = http.createServer(async (req, res) => {
       try {
         const { telefone, mensagem, plano } = JSON.parse(body);
         const inicio = Date.now();
+
+        // Bypass: agradecimento (resposta instantânea)
+        if (REGEX_AGRADECIMENTO.test(mensagem.trim())) {
+          const ms = Date.now() - inicio;
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ resposta: MSG_AGRADECIMENTO, ms }));
+          return;
+        }
+
+        // Bypass: conversão simples (CV/kW/HP)
+        const respConv = tentarConversao(mensagem);
+        if (respConv) {
+          const ms = Date.now() - inicio;
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ resposta: respConv, ms }));
+          return;
+        }
 
         // Bypass do LLM — plano atual do usuário (vem ANTES do regex de planos)
         if (REGEX_PLANO_ATUAL.test(mensagem)) {

@@ -68,6 +68,55 @@ function ehOutraNorma(msg) {
   return /\b(nr-10|nr10|nr-12|nr12|nr-33|nr33|nr-35|nr35|nbr\s*5419|nbr5419|nbr\s*5413|nbr5413|nbr\s*14039|nbr14039)\b/i.test(msg);
 }
 
+// Detecta agradecimentos / mensagens curtas de despedida (resposta instantânea)
+function ehAgradecimento(msg) {
+  const m = msg.toLowerCase().trim().replace(/[!?.,]+$/, '');
+  return /^(obrigad[oa]|obg|valeu|vlw|tmj|tudo\s+bem|tudo\s+ok|brigad[oa]|tks|thank[ys]?|legal|bele[zs]a|tranquilo|certo|entendi|perfeito|massa|excelente|ot[ií]mo)\b/.test(m);
+}
+
+const MSG_AGRADECIMENTO = `🤝 Por nada! Se precisar de mais alguma coisa elétrica, é só chamar.`;
+
+// Conversões simples — bypassa LLM pra resposta instantânea e exata
+function tentarConversao(msg) {
+  // CV → kW: "10 cv em/para kw"
+  let m = msg.match(/(\d+(?:[.,]\d+)?)\s*cv\s+(em|para|para\s+converter|=>?)\s*kw/i);
+  if (m) {
+    const v = parseFloat(m[1].replace(',', '.'));
+    return `✅ ${v} CV = ${(v * 0.736).toFixed(2)} kW (× 0,736)`;
+  }
+  // kW → CV
+  m = msg.match(/(\d+(?:[.,]\d+)?)\s*kw\s+(em|para|=>?)\s*cv/i);
+  if (m) {
+    const v = parseFloat(m[1].replace(',', '.'));
+    return `✅ ${v} kW = ${(v / 0.736).toFixed(2)} CV (÷ 0,736)`;
+  }
+  // HP → CV
+  m = msg.match(/(\d+(?:[.,]\d+)?)\s*hp\s+(em|para|=>?)\s*cv/i);
+  if (m) {
+    const v = parseFloat(m[1].replace(',', '.'));
+    return `✅ ${v} HP = ${(v * 1.0139).toFixed(2)} CV (× 1,0139)`;
+  }
+  // CV → HP
+  m = msg.match(/(\d+(?:[.,]\d+)?)\s*cv\s+(em|para|=>?)\s*hp/i);
+  if (m) {
+    const v = parseFloat(m[1].replace(',', '.'));
+    return `✅ ${v} CV = ${(v * 0.9863).toFixed(2)} HP (× 0,9863)`;
+  }
+  // kW → HP
+  m = msg.match(/(\d+(?:[.,]\d+)?)\s*kw\s+(em|para|=>?)\s*hp/i);
+  if (m) {
+    const v = parseFloat(m[1].replace(',', '.'));
+    return `✅ ${v} kW = ${(v * 1.341).toFixed(2)} HP (× 1,341)`;
+  }
+  // HP → kW
+  m = msg.match(/(\d+(?:[.,]\d+)?)\s*hp\s+(em|para|=>?)\s*kw/i);
+  if (m) {
+    const v = parseFloat(m[1].replace(',', '.'));
+    return `✅ ${v} HP = ${(v * 0.7457).toFixed(2)} kW (× 0,7457)`;
+  }
+  return null;
+}
+
 // Detecta pergunta "qual é meu plano atual" (precisa rodar ANTES de ehPlanos pra não confundir)
 function ehPlanoAtual(msg) {
   return /\b(meu\s+plano|plano\s+atual|qual\s+(é|e|o|eh)\s+(o\s+)?meu\s+plano|que\s+plano\s+(eu\s+)?(tenho|uso|estou)|estou\s+(em\s+|no\s+)?(qual\s+)?plano|verificar\s+(o\s+)?(meu\s+)?plano|quanto\s+(eu\s+)?(falta|tenho|sobr)|ver\s+meu\s+plano|saber\s+(o\s+)?meu\s+plano)\b/i.test(msg);
@@ -239,6 +288,21 @@ export default async function handler(req, res) {
       historico.forEach((c, i) => { resp += `${i+1}. *${c.tipo_calculo||'Cálculo'}* — ${new Date(c.realizado_em).toLocaleDateString('pt-BR')}\n`; });
       await enviarMensagem(telefone, resp);
       await registrarConversa(telefone, resp, 'agente');
+      return res.status(200).json({ ok: true });
+    }
+
+    // ═══ AGRADECIMENTO ═══ (resposta instantânea, sem LLM)
+    if (ehAgradecimento(msg)) {
+      await enviarMensagem(telefone, MSG_AGRADECIMENTO);
+      await registrarConversa(telefone, MSG_AGRADECIMENTO, 'agente');
+      return res.status(200).json({ ok: true });
+    }
+
+    // ═══ CONVERSÃO SIMPLES ═══ (CV/kW/HP — bypassa LLM)
+    const respConversao = tentarConversao(msg);
+    if (respConversao) {
+      await enviarMensagem(telefone, respConversao);
+      await registrarConversa(telefone, respConversao, 'agente');
       return res.status(200).json({ ok: true });
     }
 
