@@ -52,7 +52,8 @@ const REGEX_PLANOS = /\b(planos?|ver\s+planos|valores|pre[çc]os?|quanto\s+custa
 const REGEX_PLANO_ATUAL = /\b(meu\s+plano|plano\s+atual|qual\s+(é|e|o|eh)\s+(o\s+)?meu\s+plano|que\s+plano\s+(eu\s+)?(tenho|uso|estou)|estou\s+(em\s+|no\s+)?(qual\s+)?plano|verificar\s+(o\s+)?(meu\s+)?plano|ver\s+meu\s+plano|saber\s+(o\s+)?meu\s+plano)\b/i;
 
 // Agradecimentos / despedidas curtas
-const REGEX_AGRADECIMENTO = /^(obrigad[oa]|obg|valeu|vlw|tmj|tudo\s+bem|tudo\s+ok|brigad[oa]|tks|thank[ys]?|legal|bele[zs]a|tranquilo|certo|entendi|perfeito|massa|excelente|ot[ií]mo)\b[!?.,\s]*$/i;
+// IMPORTANTE: usa ([!?.,\s]|$) em vez de \b porque \b não trata acentos.
+const REGEX_AGRADECIMENTO = /^(obrigad[oa]|obg|valeu|vlw|tmj|tudo\s+bem|tudo\s+ok|brigad[oa]|tks|thank[ys]?|legal|bele[zs]a|tranquilo|certo|entendi|perfeito|massa|excelente|ot[ií]mo)([!?.,;:\s]|$)/i;
 const MSG_AGRADECIMENTO = `🤝 Por nada! Se precisar de mais alguma coisa elétrica, é só chamar.`;
 
 // Conversões simples (CV/kW/HP)

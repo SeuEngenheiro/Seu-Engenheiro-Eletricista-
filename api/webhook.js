@@ -27,10 +27,12 @@ const TEMPO_SESSAO = 8 * 60 * 60 * 1000;
 function jaEnviouBoasVindas(t) { const ts = boasVindasEnviadas.get(t); return ts && Date.now() - ts < TEMPO_SESSAO; }
 function marcarBoasVindas(t) { boasVindasEnviadas.set(t, Date.now()); }
 
-// Detecta saudações com flexibilidade (com ou sem pontuação, com complemento)
+// Detecta saudações com flexibilidade (com ou sem pontuação, com complemento).
+// IMPORTANTE: usa ([!?.,\s]|$) em vez de \b porque \b do JS não trata acentos
+// como word char — 'olá' falhava no \b após o 'á'.
 function isOla(msg) {
   const m = msg.toLowerCase().trim();
-  return /^(oi|ol[aá]|hey|hello|e\s*a[íi]|salve|fala|bom\s+dia|boa\s+tarde|boa\s+noite|menu|in[íi]cio|come[çc]ar|start)\b/.test(m);
+  return /^(oi|ol[aá]|hey|hello|e\s*a[íi]|salve|fala|bom\s+dia|boa\s+tarde|boa\s+noite|menu|in[íi]cio|come[çc]ar|start)([!?.,;:\s]|$)/.test(m);
 }
 
 // Identifica qual tipo de saudação foi usada pra ecoar de volta
@@ -71,7 +73,7 @@ function ehOutraNorma(msg) {
 // Detecta agradecimentos / mensagens curtas de despedida (resposta instantânea)
 function ehAgradecimento(msg) {
   const m = msg.toLowerCase().trim().replace(/[!?.,]+$/, '');
-  return /^(obrigad[oa]|obg|valeu|vlw|tmj|tudo\s+bem|tudo\s+ok|brigad[oa]|tks|thank[ys]?|legal|bele[zs]a|tranquilo|certo|entendi|perfeito|massa|excelente|ot[ií]mo)\b/.test(m);
+  return /^(obrigad[oa]|obg|valeu|vlw|tmj|tudo\s+bem|tudo\s+ok|brigad[oa]|tks|thank[ys]?|legal|bele[zs]a|tranquilo|certo|entendi|perfeito|massa|excelente|ot[ií]mo)([!?.,;:\s]|$)/.test(m);
 }
 
 const MSG_AGRADECIMENTO = `🤝 Por nada! Se precisar de mais alguma coisa elétrica, é só chamar.`;
