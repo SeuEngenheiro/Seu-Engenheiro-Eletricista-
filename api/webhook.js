@@ -78,6 +78,165 @@ function ehAgradecimento(msg) {
 
 const MSG_AGRADECIMENTO = `🤝 Por nada! Se precisar de mais alguma coisa elétrica, é só chamar.`;
 
+// ═══════════════════════════════════════════════════════════════
+// CONCEITOS FIXOS — respostas instantâneas pras perguntas mais comuns
+// ═══════════════════════════════════════════════════════════════
+
+const RESP_DR = `🔵 *DR — Diferencial Residual*
+
+✅ *Resposta direta*
+Dispositivo que desarma em <40 ms quando detecta fuga ≥30 mA pra terra.
+
+🛠️ *Justificativa técnica*
+Compara corrente entrando vs. saindo do circuito. Se diferença ≥ IΔn, é fuga (geralmente pra terra) e o DR desarma protegendo contra choque.
+
+📋 *Norma*
+NBR 5410 §5.1.3.2.2 — obrigatório em áreas molhadas, banheiros, cozinhas e tomadas externas.
+
+💡 *Dica prática*
+DR não substitui disjuntor — disjuntor → fios contra sobrecarga; DR → pessoas contra choque.
+
+*Caso queira mais detalhes, é só pedir.*`;
+
+const RESP_DPS = `🔵 *DPS — Dispositivo de Proteção contra Surtos*
+
+✅ *Resposta direta*
+Limita sobretensões transitórias (raios, manobras) pra proteger equipamentos.
+
+🛠️ *Justificativa técnica*
+Quando há pico de tensão, o DPS desvia a corrente pra terra evitando que chegue aos equipamentos.
+
+📋 *Norma*
+NBR 5410 §6.3.5 — obrigatório em entrada de instalações com SPDA ou em áreas com risco de raios.
+
+📊 *Classes*
+• Classe I: entrada da instalação (raios diretos)
+• Classe II: quadro de distribuição (mais comum)
+• Classe III: junto ao equipamento sensível
+
+*Caso queira mais detalhes, é só pedir.*`;
+
+const RESP_DISJUNTOR = `🔵 *Disjuntor — Conceito*
+
+✅ *Resposta direta*
+Dispositivo que protege fios contra sobrecarga e curto-circuito desligando automaticamente.
+
+🛠️ *Justificativa técnica*
+- Sobrecarga: corrente acima do nominal por tempo → desarme térmico
+- Curto: pico instantâneo → desarme magnético
+
+📋 *Norma*
+NBR 5410 §5.3.4 + IEC 60898 (disjuntores residenciais).
+
+📊 *Curvas comerciais*
+• B → cargas resistivas (chuveiro, aquecedor)
+• C → mistas residenciais (TUE, iluminação)
+• D → motores e cargas com partida elevada
+
+*Caso queira mais detalhes, é só pedir.*`;
+
+const RESP_DIF_DR_DISJ = `🔵 *Disjuntor × DR — Diferenças*
+
+✅ *Disjuntor*
+• Protege FIOS contra sobrecarga e curto
+• Detecta corrente excessiva
+• NÃO protege contra choque
+
+✅ *DR*
+• Protege PESSOAS contra choque elétrico
+• Detecta fuga de corrente pra terra (≥30 mA)
+• NÃO protege contra sobrecarga ou curto
+
+⚠️ *Importante*
+Eles NÃO se substituem — você precisa dos DOIS na instalação.
+NBR 5410 obriga ambos em áreas molhadas e tomadas externas.
+
+*Caso queira mais detalhes, é só pedir.*`;
+
+const RESP_TENSAO_BR = `🔵 *Tensão padrão no Brasil*
+
+✅ *Resposta direta*
+Depende da região:
+• 127 V (monofásico) — RJ, ES, MG, parte do NE
+• 220 V (monofásico) — SP, sul, PR, BA, parte do NE
+• 220/380 V (trifásico) — industrial e residencial trifásico
+
+📋 *Norma*
+NBR 5440 (transformadores) e padrões da concessionária local.
+
+💡 *Dica*
+Sempre confirme com sua distribuidora local — varia inclusive entre cidades vizinhas.
+
+*Caso queira mais detalhes, é só pedir.*`;
+
+function ehPerguntaDR(msg) {
+  return /\b(o\s+que\s+(é|e)\s+(um\s+)?dr|para\s+que\s+serve\s+(o\s+)?dr|conceito\s+(de|do)\s+dr|dr\s+(é|e)\s+(obrigat[óo]rio|necess[áa]rio)|preciso\s+de\s+dr|qual\s+(a\s+)?fun[çc][ãa]o\s+do\s+dr)\b/i.test(msg);
+}
+function ehPerguntaDPS(msg) {
+  return /\b(o\s+que\s+(é|e)\s+(um\s+)?dps|para\s+que\s+serve\s+(o\s+)?dps|conceito\s+(de|do)\s+dps|dps\s+(é|e)\s+(obrigat[óo]rio|necess[áa]rio)|preciso\s+de\s+dps|qual\s+(a\s+)?fun[çc][ãa]o\s+do\s+dps)\b/i.test(msg);
+}
+function ehPerguntaDisjuntor(msg) {
+  // Só captura quando é pergunta CONCEITUAL ("o que é"), não dimensionamento
+  return /\b(o\s+que\s+(é|e)\s+(um\s+)?disjuntor|para\s+que\s+serve\s+(o\s+)?disjuntor|conceito\s+(de|do)\s+disjuntor|defini[çc][ãa]o\s+(de|do)\s+disjuntor)\b/i.test(msg);
+}
+function ehDiferencaDR(msg) {
+  return /\b(diferen[çc]a\s+entre\s+(o\s+)?dr\s+e\s+(o\s+)?disjuntor|disjuntor\s+(e|vs|x|versus)\s+dr|dr\s+(e|vs|x|versus)\s+disjuntor|qual\s+a\s+diferen[çc]a\s+entre\s+(eles|disjuntor\s+e\s+dr))\b/i.test(msg);
+}
+function ehPerguntaTensaoBR(msg) {
+  return /\b(qual\s+(a\s+)?tens[ãa]o\s+(do|no)\s+brasil|tens[ãa]o\s+(padr[ãa]o|comum)\s+(no\s+)?brasil|qual\s+(a\s+)?tens[ãa]o\s+da\s+rede)\b/i.test(msg);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CÁLCULOS PARAMÉTRICOS — lookup direto sem LLM
+// ═══════════════════════════════════════════════════════════════
+
+// NBR 5410 Tabela 36 (Cu, PVC 70°C, B1, 2 cond. carregados, 30°C)
+const TABELA_CABO = [
+  [1.5, 17.5], [2.5, 24], [4, 32], [6, 41], [10, 57], [16, 76],
+  [25, 101], [35, 125], [50, 151], [70, 192], [95, 232], [120, 269],
+  [150, 309], [185, 353], [240, 415], [300, 477], [400, 569], [500, 649],
+];
+const DISJUNTORES_COMERCIAIS = [6, 10, 16, 20, 25, 32, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630];
+
+function tentarCaboPorAmperes(msg) {
+  const m = msg.match(/cabo\s+(?:p\/|para|de)\s+(\d+(?:[.,]\d+)?)\s*a(?:mp[èeé]res?)?\b/i);
+  if (!m) return null;
+  const ib = parseFloat(m[1].replace(',', '.'));
+  const escolha = TABELA_CABO.find(([_, cap]) => cap >= ib);
+  if (!escolha) return null;
+  return `*Cabo para ${ib} A*
+
+⚡ *Resultado*
+Cabo *${escolha[0]} mm²* (capacidade ${escolha[1]} A — NBR 5410 Tabela 36)
+
+📌 *Obs.:* assume cobre, PVC 70°C, método B1 (eletroduto embutido), 30°C.
+Para outras condições, aplicar fatores de correção (agrupamento, temperatura).
+
+⚠️ Verificar também queda de tensão se distância >30 m.
+
+*Caso queira mais detalhes, é só pedir.*`;
+}
+
+function tentarDisjuntorPorAmperes(msg) {
+  const m = msg.match(/disjuntor\s+(?:p\/|para|de)\s+(\d+(?:[.,]\d+)?)\s*a(?:mp[èeé]res?)?\b/i);
+  if (!m) return null;
+  const ib = parseFloat(m[1].replace(',', '.'));
+  const escolha = DISJUNTORES_COMERCIAIS.find(c => c >= ib);
+  if (!escolha) return null;
+  return `*Disjuntor para ${ib} A*
+
+⚡ *Resultado*
+Disjuntor *${escolha} A* (próximo valor comercial ≥ ${ib} A)
+
+📌 *Obs.:* regra NBR 5410 → IB ≤ IN ≤ IZ.
+- Curva C: cargas residenciais mistas (TUE, iluminação)
+- Curva D: motores ou cargas com partida elevada
+
+⚠️ Conferir se o cabo aguenta o disjuntor (capacidade do cabo ≥ IN).
+
+*Caso queira mais detalhes, é só pedir.*`;
+}
+
 // Conversões simples — bypassa LLM pra resposta instantânea e exata
 function tentarConversao(msg) {
   // CV → kW: "10 cv em/para kw"
@@ -298,11 +457,38 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true });
     }
 
+    // ═══ CONCEITOS FIXOS ═══ (DR, DPS, Disjuntor — respostas imutáveis)
+    let respConceito = null;
+    if (ehDiferencaDR(msg))           respConceito = RESP_DIF_DR_DISJ;
+    else if (ehPerguntaDR(msg))       respConceito = RESP_DR;
+    else if (ehPerguntaDPS(msg))      respConceito = RESP_DPS;
+    else if (ehPerguntaDisjuntor(msg)) respConceito = RESP_DISJUNTOR;
+    else if (ehPerguntaTensaoBR(msg)) respConceito = RESP_TENSAO_BR;
+    if (respConceito) {
+      await enviarMensagem(telefone, respConceito);
+      await registrarConversa(telefone, respConceito, 'agente');
+      return res.status(200).json({ ok: true });
+    }
+
     // ═══ CONVERSÃO SIMPLES ═══ (CV/kW/HP — bypassa LLM)
     const respConversao = tentarConversao(msg);
     if (respConversao) {
       await enviarMensagem(telefone, respConversao);
       await registrarConversa(telefone, respConversao, 'agente');
+      return res.status(200).json({ ok: true });
+    }
+
+    // ═══ CABO/DISJUNTOR PARAMÉTRICO ═══ (lookup tabela NBR 5410, sem LLM)
+    const respCabo = tentarCaboPorAmperes(msg);
+    if (respCabo) {
+      await enviarMensagem(telefone, respCabo);
+      await registrarConversa(telefone, respCabo, 'agente');
+      return res.status(200).json({ ok: true });
+    }
+    const respDisj = tentarDisjuntorPorAmperes(msg);
+    if (respDisj) {
+      await enviarMensagem(telefone, respDisj);
+      await registrarConversa(telefone, respDisj, 'agente');
       return res.status(200).json({ ok: true });
     }
 
