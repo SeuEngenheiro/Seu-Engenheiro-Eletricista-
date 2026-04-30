@@ -514,17 +514,24 @@ export default async function handler(req, res) {
     // Detecção CONTEXTUAL — exige palavra ligada a plano/assinatura.
     // Antes capturava 'qual o valor' isolado e dava falso positivo em
     // perguntas técnicas como 'qual o valor ideal de resistência'.
+    // Detecção CONTEXTUAL — captura "planos" plural (quase sempre comercial)
+    // exceto contextos técnicos (planos de instalação/aterramento/etc).
+    // Para "plano" singular, exige contexto comercial explícito.
+    const ehPlanosPlural = /\bplanos\b/i.test(msg);
+    const ehPlanoTecnico = /\bplanos?\s+de\s+(instala|aterra|el[ée]tric|projet|trabal|estudo|tomada|circuit|emerg|prote[çc]|ilumina|distribui|carga|obra|montag|ataca|reform|seguran)/i.test(msg);
     const ehPergPlanos = (
-      /^plan[oa]s?[!?.,;:\s]*$/i.test(msg) ||                         // "Plano"/"Planos" sozinho
-      /\bver\s+planos?\b/i.test(msg) ||                                // "ver planos"
-      /\bmostra(r)?\s+(os\s+)?planos?\b/i.test(msg) ||                 // "mostra os planos"
-      /\bquero\s+(assinar|contratar|fazer\s+upgrade)\b/i.test(msg) ||  // "quero assinar"
-      /\bassinar\s+(o\s+|um\s+)?(plano|profissional|premium)\b/i.test(msg) || // "assinar plano"
-      /\bfazer\s+upgrade\b/i.test(msg) ||                              // "fazer upgrade"
-      /\bcontratar\s+(o\s+|um\s+)?(plano|servi[çc]o|seu)\b/i.test(msg) || // "contratar plano"
-      /\bquanto\s+custa\s+(o\s+plano|a\s+assinatura|cada\s+plano|os\s+planos?|profissional|premium|p(ra|ara)\s+(assinar|usar))\b/i.test(msg) ||
-      /\bvalores?\s+dos?\s+planos?\b/i.test(msg) ||                    // "valores dos planos"
-      /\bpre[çc]os?\s+(do|dos|da|de)\s+(plano|assinatura)\b/i.test(msg) // "preço do plano"
+      // "planos" plural sem contexto técnico
+      (ehPlanosPlural && !ehPlanoTecnico) ||
+      // "plano" singular sozinho ou com pontuação
+      /^plano[!?.,;:\s]*$/i.test(msg) ||
+      // Ações claras de assinatura/contratação
+      /\bquero\s+(assinar|contratar|fazer\s+upgrade)\b/i.test(msg) ||
+      /\b(assinar|contratar)\s+(o\s+|um\s+)?(plano|profissional|premium)\b/i.test(msg) ||
+      /\bfazer\s+upgrade\b/i.test(msg) ||
+      // Preço/valor com contexto comercial
+      /\bquanto\s+custa\s+(o\s+plano|a\s+assinatura|profissional|premium|p(ra|ara)\s+(assinar|usar|contratar))\b/i.test(msg) ||
+      /\bvalores?\s+dos?\s+planos?\b/i.test(msg) ||
+      /\bpre[çc]os?\s+(do|dos|da|de)\s+(plano|assinatura)\b/i.test(msg)
     );
     if (ehPergPlanos) {
       await enviarMensagem(telefone, MSG_PLANOS);
