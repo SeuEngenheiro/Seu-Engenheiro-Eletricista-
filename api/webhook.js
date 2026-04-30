@@ -137,9 +137,7 @@ function montarPlanoAtual(plano, restantes) {
   return `📊 *Seu plano atual: 🟢 GRATUITO*\n\n• 20 perguntas/mês — usadas: *${usados}/20*\n• Resposta técnica padrão\n• Direcionamento conforme NBR 5410\n\n💡 Quer perguntas ilimitadas + cálculos detalhados?\n🔵 *PROFISSIONAL* (R$ 24,99/mês):\n👉 https://pay.kiwify.com.br/mVAGqLU\n\n🔴 *PREMIUM* (R$ 49,99/mês):\n👉 https://pay.kiwify.com.br/Mns2lfH`;
 }
 
-const BOAS_VINDAS_GRATIS = `👷‍♂️⚡ Olá! Eu sou o SEU ENGENHEIRO AI\n\nPosso te ajudar com qualquer dúvida ou problema elétrico, sempre seguindo as normas (NBR 5410 / NR-10).\n\n🟢 *Plano Gratuito:* 20 perguntas/mês\n\nO que você precisa?`;
-const BOAS_VINDAS_PRO = `⚡ *PROFISSIONAL ativo — ilimitado*\n\nOi! Que bom que você está aqui 👷\n\nPerguntas ilimitadas, cálculo passo a passo e lista de materiais!\n\n💡 Quer fotos, preços atualizados e análise de projeto?\n🔴 *PREMIUM R$ 49,99/mês*: https://pay.kiwify.com.br/Mns2lfH`;
-const BOAS_VINDAS_PREMIUM = `🔴 *PREMIUM — nível engenheiro*\n\nOi! Ótimo ter você aqui 👷\n\nAcesso total — cálculos, projetos, fotos, preços atualizados, histórico e suporte!\n\n✅ Acesso total liberado — sem limites!`;
+// Boas-vindas geradas dinamicamente por montarBoasVindas() — adapta saudação ao plano + saudação detectada do usuário (Bom dia / Boa tarde / Olá)
 
 const MSG_LIMITE_CALCULOS = `⚠️ Você atingiu o limite de *20 perguntas/mês* do plano gratuito.\n\nPra continuar sem limites:\n\n📊 *Planos — Seu Engenheiro AI*\n\n━━━━━━━━━━━━━━━━━━━━━━━━\n🔵 *Plano Profissional — R$ 24,99/mês*\n• Perguntas ilimitadas\n• Cálculos ilimitados\n• Dimensionamento detalhado\n• Lista de materiais (SEM PREÇOS)\n• Especificação técnica de materiais\n👉 https://pay.kiwify.com.br/mVAGqLU\n\n━━━━━━━━━━━━━━━━━━━━━━━━\n🔴 *Plano Premium — R$ 49,99/mês*\n• Tudo do Profissional\n• 💰 Lista de materiais (COM PREÇOS)\n• 📷 Análise de fotos ilimitada\n• 📜 Histórico completo acessível\n• 🏗️ Análise de projeto (fotos + planta)\n👉 https://pay.kiwify.com.br/Mns2lfH\n\n*✅ Pronto pra começar? Assine um plano agora.*`;
 
