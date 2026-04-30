@@ -511,7 +511,22 @@ export default async function handler(req, res) {
     }
 
     // ═══ PLANOS ═══
-    if (/\b(planos?|ver\s+planos|valores|pre[çc]os?|quanto\s+custa|qual\s+o\s+(valor|pre[çc]o)|quero\s+assinar|assinar(\s+plano)?|upgrade|contratar|fazer\s+upgrade)\b/i.test(msg)) {
+    // Detecção CONTEXTUAL — exige palavra ligada a plano/assinatura.
+    // Antes capturava 'qual o valor' isolado e dava falso positivo em
+    // perguntas técnicas como 'qual o valor ideal de resistência'.
+    const ehPergPlanos = (
+      /^plan[oa]s?[!?.,;:\s]*$/i.test(msg) ||                         // "Plano"/"Planos" sozinho
+      /\bver\s+planos?\b/i.test(msg) ||                                // "ver planos"
+      /\bmostra(r)?\s+(os\s+)?planos?\b/i.test(msg) ||                 // "mostra os planos"
+      /\bquero\s+(assinar|contratar|fazer\s+upgrade)\b/i.test(msg) ||  // "quero assinar"
+      /\bassinar\s+(o\s+|um\s+)?(plano|profissional|premium)\b/i.test(msg) || // "assinar plano"
+      /\bfazer\s+upgrade\b/i.test(msg) ||                              // "fazer upgrade"
+      /\bcontratar\s+(o\s+|um\s+)?(plano|servi[çc]o|seu)\b/i.test(msg) || // "contratar plano"
+      /\bquanto\s+custa\s+(o\s+plano|a\s+assinatura|cada\s+plano|os\s+planos?|profissional|premium|p(ra|ara)\s+(assinar|usar))\b/i.test(msg) ||
+      /\bvalores?\s+dos?\s+planos?\b/i.test(msg) ||                    // "valores dos planos"
+      /\bpre[çc]os?\s+(do|dos|da|de)\s+(plano|assinatura)\b/i.test(msg) // "preço do plano"
+    );
+    if (ehPergPlanos) {
       await enviarMensagem(telefone, MSG_PLANOS);
       await registrarConversa(telefone, MSG_PLANOS, 'agente');
       return res.status(200).json({ ok: true });

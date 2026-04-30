@@ -46,7 +46,21 @@ Indicado pra uso profissional e projetos.
 
 *✅ Pronto pra começar? Assine um plano agora.*`;
 
-const REGEX_PLANOS = /\b(planos?|ver\s+planos|valores|pre[çc]os?|quanto\s+custa|qual\s+o\s+(valor|pre[çc]o)|quero\s+assinar|assinar(\s+plano)?|upgrade|contratar|fazer\s+upgrade)\b/i;
+// Detecção CONTEXTUAL — evita falso positivo em "qual o valor da resistência"
+function isPergPlanos(msg) {
+  return (
+    /^plan[oa]s?[!?.,;:\s]*$/i.test(msg) ||
+    /\bver\s+planos?\b/i.test(msg) ||
+    /\bmostra(r)?\s+(os\s+)?planos?\b/i.test(msg) ||
+    /\bquero\s+(assinar|contratar|fazer\s+upgrade)\b/i.test(msg) ||
+    /\bassinar\s+(o\s+|um\s+)?(plano|profissional|premium)\b/i.test(msg) ||
+    /\bfazer\s+upgrade\b/i.test(msg) ||
+    /\bcontratar\s+(o\s+|um\s+)?(plano|servi[çc]o|seu)\b/i.test(msg) ||
+    /\bquanto\s+custa\s+(o\s+plano|a\s+assinatura|cada\s+plano|os\s+planos?|profissional|premium|p(ra|ara)\s+(assinar|usar))\b/i.test(msg) ||
+    /\bvalores?\s+dos?\s+planos?\b/i.test(msg) ||
+    /\bpre[çc]os?\s+(do|dos|da|de)\s+(plano|assinatura)\b/i.test(msg)
+  );
+}
 
 const REGEX_PLANO_ATUAL = /\b(meu\s+plano|plano\s+atual|qual\s+(é|e|o|eh)\s+(o\s+)?meu\s+plano|que\s+plano\s+(eu\s+)?(tenho|uso|estou)|estou\s+(em\s+|no\s+)?(qual\s+)?plano|verificar\s+(o\s+)?(meu\s+)?plano|ver\s+meu\s+plano|saber\s+(o\s+)?meu\s+plano)\b/i;
 
@@ -125,7 +139,7 @@ const server = http.createServer(async (req, res) => {
 
         // Bypass do LLM pra perguntas sobre planos — resposta fixa garante
         // que os links nunca sejam alterados pelo modelo
-        if (REGEX_PLANOS.test(mensagem)) {
+        if (isPergPlanos(mensagem)) {
           const ms = Date.now() - inicio;
           res.writeHead(200, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ resposta: MSG_PLANOS, ms }));
