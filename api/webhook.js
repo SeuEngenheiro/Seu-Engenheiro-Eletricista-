@@ -44,15 +44,18 @@ function obterSaudacao(msg) {
   return 'Olá';
 }
 
-// Monta a mensagem de boas-vindas usando a saudação detectada
-function montarBoasVindas(plano, saudacao) {
+// Monta a mensagem de boas-vindas — MESMO PADRÃO pra todos os planos
+// Linha do plano varia: Gratuito mostra contador X/20, Pro/Premium mostra nome
+function montarBoasVindas(plano, saudacao, usados = 0) {
+  let linhaPlano;
   if (plano === 'premium') {
-    return `🔴 *PREMIUM — nível engenheiro*\n\n${saudacao}! Ótimo ter você aqui 👷\n\nAcesso total — cálculos, projetos, fotos, preços atualizados, histórico e suporte!\n\n✅ Acesso total liberado — sem limites!`;
+    linhaPlano = '🔴 *Plano Premium:* acesso total — sem limites';
+  } else if (plano === 'pro') {
+    linhaPlano = '🔵 *Plano Profissional:* perguntas ilimitadas';
+  } else {
+    linhaPlano = `🟢 *Plano Gratuito:* ${usados}/20 perguntas/mês`;
   }
-  if (plano === 'pro') {
-    return `⚡ *PROFISSIONAL ativo — ilimitado*\n\n${saudacao}! Que bom que você está aqui 👷\n\nPerguntas ilimitadas, cálculo passo a passo e lista de materiais!\n\n💡 Quer fotos, preços atualizados e análise de projeto?\n🔴 *PREMIUM R$ 49,99/mês*: https://pay.kiwify.com.br/Mns2lfH`;
-  }
-  return `👷‍♂️⚡ ${saudacao}! Eu sou o SEU ENGENHEIRO AI\n\nPosso te ajudar com qualquer dúvida ou problema elétrico, sempre seguindo as normas (NBR 5410 / NR-10).\n\n🟢 *Plano Gratuito:* 20 perguntas/mês\n\nO que você precisa?`;
+  return `👷‍♂️⚡ ${saudacao}! Eu sou o SEU ENGENHEIRO AI\n\nPosso te ajudar com qualquer dúvida ou problema elétrico, sempre seguindo as normas (NBR 5410 / NR-10).\n\n${linhaPlano}\n\nO que você precisa?`;
 }
 function ehCalculo(msg) {
   return /\b(calcul|dimens|corrente|queda.*tens|disjuntor|cabo\s*(para|de|mm)|motor|chuveiro|transformador|potência|capacitor|iluminância|\d+\s*(kva|kw|cv|hp|w)|\d+\s*v\s*(tri|mono|bi))\b/i.test(msg);
@@ -426,7 +429,13 @@ export default async function handler(req, res) {
     if (isOla(mensagem)) {
       marcarBoasVindas(telefone);
       const saudacao = obterSaudacao(mensagem);
-      const texto = montarBoasVindas(plano, saudacao);
+      // Pra plano grátis, mostra contador X/20 perguntas no mês
+      let usados = 0;
+      if (plano === 'gratis') {
+        const lim = await verificarLimiteCalculos(telefone);
+        usados = 20 - (lim.restantes ?? 20);
+      }
+      const texto = montarBoasVindas(plano, saudacao, usados);
       await enviarMensagem(telefone, texto);
       await registrarConversa(telefone, texto, 'agente');
       return res.status(200).json({ ok: true });

@@ -451,15 +451,24 @@ Não substitui projeto técnico com ART quando exigido.
     }
   });
 
-  // Saudação automática ao abrir a conversa (primeiro acesso da sessão)
-  const BOAS_VINDAS = `👷‍♂️⚡ Olá! Eu sou o SEU ENGENHEIRO AI
+  // Saudação automática ao abrir a conversa — adapta ao plano selecionado
+  function montarBoasVindasEmulador() {
+    const plano = planoSel.value;
+    let linhaPlano;
+    if (plano === 'premium') linhaPlano = '🔴 *Plano Premium:* acesso total — sem limites';
+    else if (plano === 'pro') linhaPlano = '🔵 *Plano Profissional:* perguntas ilimitadas';
+    else linhaPlano = '🟢 *Plano Gratuito:* 0/20 perguntas/mês';
+    return `👷‍♂️⚡ Olá! Eu sou o SEU ENGENHEIRO AI
 
 Posso te ajudar com qualquer dúvida ou problema elétrico, sempre seguindo as normas (NBR 5410 / NR-10).
 
+${linhaPlano}
+
 O que você precisa?`;
+  }
   setTimeout(() => {
     const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-    addMsg(BOAS_VINDAS, 'bot', hora);
+    addMsg(montarBoasVindasEmulador(), 'bot', hora);
   }, 300);
 
   input.focus();
