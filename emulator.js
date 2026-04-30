@@ -44,8 +44,7 @@ Indicado pra uso profissional e projetos.
 
 👉 https://pay.kiwify.com.br/Mns2lfH
 
-━━━━━━━━━━━━━━━━━━━━━━━━
-✅ Pronto pra começar? Assine um plano agora.`;
+*✅ Pronto pra começar? Assine um plano agora.*`;
 
 const REGEX_PLANOS = /\b(planos?|ver\s+planos|valores|pre[çc]os?|quanto\s+custa|qual\s+o\s+(valor|pre[çc]o)|quero\s+assinar|assinar(\s+plano)?|upgrade|contratar|fazer\s+upgrade)\b/i;
 
