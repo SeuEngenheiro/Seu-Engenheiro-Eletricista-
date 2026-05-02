@@ -247,13 +247,31 @@ function fmt(n, casas = null) {
 // tentarDisjuntorPorAmperesQtdCabos. Garante consistência total.
 // ─────────────────────────────────────────────────────────────────
 
-function dimensionarCabo(ib, contextoIB = '') {
+/**
+ * Dimensiona cabo seguindo formato 5 BLOCOS PURO.
+ *
+ * @param {number} ib  Corrente nominal calculada
+ * @param {object|null} ctxTrafo  Se vier de tentarTrafoCabo: {kva, v}
+ *   — quando presente, info do trafo é INTEGRADA ao Bloco 1
+ *   (resposta direta) e à fórmula no Bloco 2 (dados técnicos),
+ *   em vez de adicionar um preâmbulo separado. Mantém consistência
+ *   com bypasses simples (cabo pra X A).
+ */
+function dimensionarCabo(ib, ctxTrafo = null) {
+  const sufixoTrafo = ctxTrafo
+    ? ` para um trafo de ${fmt(ctxTrafo.kva)} kVA / ${fmt(ctxTrafo.v)} V trifásico (IB ≈ ${fmt(ib)} A)`
+    : ` atende ${fmt(ib)} A`;
+
+  const linhaCalculoIB = ctxTrafo
+    ? `*IB:* ${fmt(ib)} A — IB = S / (√3·V) = ${fmt(ctxTrafo.kva * 1000)} / (√3·${fmt(ctxTrafo.v)})\n`
+    : '';
+
   // ── Caso 1: até 300 mm² (cabo único) ──────────────────────────
   const escolha = TABELA_CABO.find(([_, cap]) => cap >= ib);
   if (escolha) {
-    let r = `Cabo de *${fmt(escolha[0])} mm²* atende ${fmt(ib)} A.`;
-    if (contextoIB) r = `${contextoIB}${r}`;
-    r += `\n\n*Capacidade:* ${fmt(escolha[1])} A (Tabela 36)\n*Material:* cobre, PVC 70°C\n*Instalação:* método B1, 30°C\n\nPara 90°C (EPR/XLPE) ou outros métodos, aplicar fatores de correção.`;
+    let r = `Cabo de *${fmt(escolha[0])} mm²*${sufixoTrafo}.`;
+    r += `\n\n${linhaCalculoIB}*Capacidade:* ${fmt(escolha[1])} A (Tabela 36)\n*Material:* cobre, PVC 70°C\n*Instalação:* método B1, 30°C`;
+    r += `\n\nPara 90°C (EPR/XLPE) ou outros métodos, aplicar fatores de correção.`;
     if (ib > 50) r += `\n\n⚠️ Verificar queda de tensão se circuito >30 m.`;
     r += `\n\nBase: NBR 5410 Tabela 36.`;
     return r;
@@ -264,9 +282,11 @@ function dimensionarCabo(ib, contextoIB = '') {
     const fator = FATOR_AGRUP[n];
     const capTotal = IZ_300_MM2 * n * fator;
     if (capTotal >= ib) {
-      let r = `*${n} cabos × 300 mm²* em paralelo por fase atendem ${fmt(ib)} A.`;
-      if (contextoIB) r = `${contextoIB}${r}`;
-      r += `\n\n*Capacidade total:* ≈ ${fmt(Math.round(capTotal))} A (${IZ_300_MM2} × ${n} × ${fmt(fator, 2)})\n*Cabo terra (PE):* ${n}× ou proporcional\n*Cabo neutro:* fase ÷ 2 se trifásico balanceado\n*Disjuntor:* compatível com ${fmt(ib)} A total`;
+      const sufixo = ctxTrafo
+        ? ` para um trafo de ${fmt(ctxTrafo.kva)} kVA / ${fmt(ctxTrafo.v)} V trifásico (IB ≈ ${fmt(ib)} A)`
+        : ` atendem ${fmt(ib)} A`;
+      let r = `*${n} cabos × 300 mm²* em paralelo por fase${sufixo}.`;
+      r += `\n\n${linhaCalculoIB}*Capacidade total:* ≈ ${fmt(Math.round(capTotal))} A (${IZ_300_MM2} × ${n} × ${fmt(fator, 2)})\n*Cabo terra (PE):* ${n}× ou proporcional\n*Cabo neutro:* fase ÷ 2 se trifásico balanceado\n*Disjuntor:* compatível com ${fmt(ib)} A total`;
       r += `\n\nBitolas acima de 300 mm² não são comerciais no Brasil. A solução é dividir a corrente em N condutores idênticos por fase.`;
       r += `\n\n⚠️ Cabos em paralelo exigem mesmo material, seção, comprimento e conexões em ambas extremidades.`;
       r += `\n\nBase: NBR 5410 §6.2.6.4 (paralelos) e Tabela 42 (agrupamento).`;
@@ -275,9 +295,12 @@ function dimensionarCabo(ib, contextoIB = '') {
   }
 
   // ── Caso 3: > 6 cabos = revisar projeto ───────────────────────
-  let r = `⚠️ Corrente de ${fmt(ib)} A excede o limite prático com cabos em paralelo.`;
-  if (contextoIB) r = `${contextoIB}${r}`;
-  r += `\n\nMesmo 6 cabos × 300 mm² em paralelo (capacidade ≈ ${fmt(Math.round(IZ_300_MM2 * 6 * FATOR_AGRUP[6]))} A) ficam no limite.`;
+  const sufixoExcesso = ctxTrafo
+    ? ` (trafo de ${fmt(ctxTrafo.kva)} kVA / ${fmt(ctxTrafo.v)} V → IB ≈ ${fmt(ib)} A)`
+    : '';
+  let r = `⚠️ Corrente de ${fmt(ib)} A${sufixoExcesso} excede o limite prático com cabos em paralelo.`;
+  r += `\n\n${linhaCalculoIB}*Limite com 6 × 300 mm²:* ≈ ${fmt(Math.round(IZ_300_MM2 * 6 * FATOR_AGRUP[6]))} A`;
+  r += `\n\nMesmo 6 cabos × 300 mm² em paralelo ficam no limite.`;
   r += `\n\nAlternativas:\n- Barramento blindado (busway) — padrão para >2000 A\n- Subir tensão (380V → 13,8 kV) reduz corrente proporcionalmente\n- Dividir a alimentação em 2+ circuitos paralelos`;
   r += `\n\nProjeto desse porte exige Engenheiro Eletricista com ART.`;
   r += `\n\nBase: NBR 14039 (média tensão) ou NBR 5410 §6.2.6.4.`;
@@ -307,9 +330,10 @@ function tentarTrafoCabo(msg) {
   if (kva <= 0 || v <= 0) return null;
   const ibCalc = (kva * 1000) / (Math.sqrt(3) * v);
   const ib = Math.round(ibCalc * 10) / 10;
-  // Bloco 1+2 do contexto: trafo + cálculo IB. dimensionarCabo continua a partir daqui.
-  const contextoIB = `Trafo de *${fmt(kva)} kVA em ${fmt(v)} V* trifásico puxa ≈ *${fmt(ib)} A*.\n\nIB = S / (√3 × V) = ${fmt(kva * 1000)} / (√3 × ${fmt(v)})\n\n`;
-  return dimensionarCabo(ib, contextoIB);
+  // Passa { kva, v } pra dimensionarCabo integrar no Bloco 1 (resposta
+  // direta) e no Bloco 2 (linha do IB com fórmula). Mantém formato
+  // 5 BLOCOS puro — sem preâmbulo separado.
+  return dimensionarCabo(ib, { kva, v });
 }
 
 // ─────────────────────────────────────────────────────────────────
