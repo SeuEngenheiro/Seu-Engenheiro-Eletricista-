@@ -194,20 +194,29 @@ function ehPerguntaTensaoBR(msg) {
 // ═══════════════════════════════════════════════════════════════
 
 // NBR 5410 Tabela 36 (Cu, PVC 70°C, B1, 2 cond. carregados, 30°C)
+// Limite COMERCIAL: 300 mm². Acima disso → cabos em paralelo (NBR §6.2.6.4)
 const TABELA_CABO = [
   [1.5, 17.5], [2.5, 24], [4, 32], [6, 41], [10, 57], [16, 76],
   [25, 101], [35, 125], [50, 151], [70, 192], [95, 232], [120, 269],
-  [150, 309], [185, 353], [240, 415], [300, 477], [400, 569], [500, 649],
+  [150, 309], [185, 353], [240, 415], [300, 477],
 ];
+// Capacidade de referência do maior cabo comercial (300 mm² B1)
+const IZ_300_MM2 = 477; // A
+// Fator de agrupamento p/ N condutores em paralelo no mesmo eletroduto
+// (NBR 5410 Tabela 42 — simplificado, lado seguro)
+const FATOR_AGRUP = { 2: 0.80, 3: 0.70, 4: 0.65, 5: 0.60, 6: 0.57 };
+
 const DISJUNTORES_COMERCIAIS = [6, 10, 16, 20, 25, 32, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630];
 
 function tentarCaboPorAmperes(msg) {
   const m = msg.match(/cabo\s+(?:p\/|para|de)\s+(\d+(?:[.,]\d+)?)\s*a(?:mp[èeé]res?)?\b/i);
   if (!m) return null;
   const ib = parseFloat(m[1].replace(',', '.'));
+
+  // ── Caso 1: até 300 mm² (cabo único) ──────────────────────────
   const escolha = TABELA_CABO.find(([_, cap]) => cap >= ib);
-  if (!escolha) return null;
-  return `*Cabo para ${ib} A*
+  if (escolha) {
+    return `*Cabo para ${ib} A*
 
 ⚡ *Resultado*
 Cabo *${escolha[0]} mm²* (capacidade ${escolha[1]} A — NBR 5410 Tabela 36)
@@ -216,6 +225,58 @@ Cabo *${escolha[0]} mm²* (capacidade ${escolha[1]} A — NBR 5410 Tabela 36)
 Para outras condições, aplicar fatores de correção (agrupamento, temperatura).
 
 ⚠️ Verificar também queda de tensão se distância >30 m.
+
+*Caso queira mais detalhes, é só pedir.*`;
+  }
+
+  // ── Caso 2: acima de 300 mm² → cabos em paralelo ──────────────
+  // Bitolas > 300 mm² NÃO são comerciais. NBR §6.2.6.4 permite
+  // condutores em paralelo (mesmo material, mesma seção, mesmo
+  // comprimento) com fator de agrupamento aplicado.
+  for (let n = 2; n <= 6; n++) {
+    const fator = FATOR_AGRUP[n];
+    const capTotal = IZ_300_MM2 * n * fator;
+    if (capTotal >= ib) {
+      return `*Cabo para ${ib} A*
+
+⚡ *Resultado*
+*${n} cabos × 300 mm² em paralelo por fase*
+Capacidade total ≈ ${Math.round(capTotal)} A
+(${IZ_300_MM2} A × ${n} × ${fator} de agrupamento)
+
+📌 *Por que paralelo?*
+Bitolas acima de 300 mm² não são comerciais no Brasil.
+NBR 5410 §6.2.6.4 permite cabos em paralelo, desde que:
+• Mesmo material (Cu)
+• Mesma seção (300 mm²)
+• Mesmo comprimento e roteamento
+• Mesmas conexões em ambas extremidades
+
+🔧 *Atenção pro projeto*
+• Cabo terra (PE) também ${n}× ou bitola maior proporcional
+• Cabo neutro: trifásico balanceado pode ser N = ½ fase
+• Disjuntor compatível com a corrente total
+• Validar com Engenheiro Eletricista (ART) — cabos em paralelo
+  exigem cuidado extra na conexão (terminais, lugs, torques).
+
+*Caso queira mais detalhes, é só pedir.*`;
+    }
+  }
+
+  // ── Caso 3: mais de 6 cabos = revisar projeto ─────────────────
+  return `*Cabo para ${ib} A*
+
+⚠️ *Corrente muito elevada (>${Math.round(IZ_300_MM2 * 6 * FATOR_AGRUP[6])} A)*
+
+Mesmo com 6 cabos × 300 mm² em paralelo, a capacidade fica no
+limite. Recomenda-se:
+• *Barramento blindado* (busway) — solução padrão p/ correntes >2000 A
+• *Subir a tensão* (380 V → 13,8 kV) reduz corrente proporcionalmente
+• *Dividir a alimentação* em 2 ou mais circuitos paralelos
+
+📋 *Norma*
+NBR 14039 (média tensão) ou NBR 5410 §6.2.6.4 (paralelos).
+Projeto desse porte exige Engenheiro Eletricista com ART.
 
 *Caso queira mais detalhes, é só pedir.*`;
 }

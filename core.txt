@@ -119,8 +119,30 @@ pelas DUAS. Cabo subdimensionado em capacidade = risco de incêndio.
    USAR: chave seccionadora + contator + relé térmico OU
    inversor de frequência (VFD) com proteção integrada.
 
-⚠️ Corrente > 415 A → cabo simples não atende. Recomendar:
-   cabos em paralelo OU barramento blindado.
+⚠️ BITOLA > 300 mm² → NUNCA indicar cabo único acima de 300 mm².
+   Bitolas > 300 mm² NÃO SÃO COMERCIAIS no Brasil.
+   AÇÃO: usar CABOS EM PARALELO de 300 mm² por fase (NBR §6.2.6.4).
+
+   Cálculo: N cabos × 300 mm², onde
+     • Iz por cabo de 300 mm² em B1 ≈ 477 A
+     • Aplicar fator de agrupamento (cabos no mesmo eletroduto):
+       2 cabos: 0,80 → 763 A total
+       3 cabos: 0,70 → 1001 A total
+       4 cabos: 0,65 → 1240 A total
+       5 cabos: 0,60 → 1431 A total
+       6 cabos: 0,57 → 1631 A total
+     • Escolher menor N tal que: IB ≤ 477 × N × fator
+     • Se IB exigir >6 cabos → recomendar barramento blindado
+       (busway) OU subir tensão (380 V → 13,8 kV).
+
+   Cabos em paralelo SEMPRE:
+     • Mesmo material, seção e comprimento (NBR §6.2.6.4)
+     • Mesmo método de instalação
+     • Conexões equivalentes nas duas pontas
+     • Cabo terra (PE) também N× ou proporcional
+     • Disjuntor compatível com IB total
+     • Resposta deve incluir: "Para projeto formal, validar com
+       Engenheiro Eletricista (ART)."
 
 ⚠️ Chuveiro > 8000 W em 127 V → atípico. Confirmar tensão.
 
