@@ -9,7 +9,8 @@
     "seed": "node scripts/seed-knowledge.js",
     "smoke": "node tests/smoke.js",
     "test:regressao": "node scripts/run-regression.js",
-    "test:regressao:full": "node scripts/run-regression.js --llm"
+    "test:regressao:full": "node scripts/run-regression.js --llm",
+    "install-hooks": "node scripts/install-hooks.js"
   },
   "dependencies": {
     "openai": "^4.47.0",

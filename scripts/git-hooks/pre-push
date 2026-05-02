@@ -1,0 +1,36 @@
+#!/bin/sh
+# ═══════════════════════════════════════════════════════════════
+# pre-push hook — Suíte de Regressão automática
+#
+# Roda 'npm run test:regressao' antes de cada `git push`.
+# Se algum teste falhar, o push é ABORTADO.
+#
+# Pra forçar push em emergência (use com cuidado):
+#   git push --no-verify
+#
+# Instalação:
+#   npm run install-hooks
+# ═══════════════════════════════════════════════════════════════
+
+echo ""
+echo "🧪 Rodando suíte de regressão antes do push (modo bypass)..."
+echo ""
+
+npm run test:regressao
+RESULT=$?
+
+if [ $RESULT -ne 0 ]; then
+  echo ""
+  echo "❌ Push ABORTADO — testes falharam."
+  echo "   Corrige os erros acima antes de publicar."
+  echo ""
+  echo "   Pra forçar push em emergência (use com cuidado):"
+  echo "     git push --no-verify"
+  echo ""
+  exit 1
+fi
+
+echo ""
+echo "✅ Todos os testes passaram. Push liberado."
+echo ""
+exit 0

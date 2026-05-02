@@ -94,6 +94,66 @@ git push origin main   # Vercel deploy automático
 
 ---
 
+## 🪝 Git pre-push hook (automatização local)
+
+Pra evitar lembrar de rodar a suíte manualmente, há um hook local que
+roda `npm run test:regressao` automaticamente antes de cada `git push`.
+Se algum teste falhar, o push é bloqueado.
+
+### Instalação (1 vez por máquina)
+
+```bash
+npm run install-hooks
+```
+
+Isso copia `scripts/git-hooks/pre-push` pra `.git/hooks/pre-push`.
+
+### Comportamento
+
+```
+$ git push
+🧪 Rodando suíte de regressão antes do push (modo bypass)...
+
+[ 1] saudacao              0ms  ✓ PASS
+...
+[24] llm (skipped)
+
+✓ Passou: 24
+✗ Falhou: 0
+
+✅ Todos os testes passaram. Push liberado.
+
+Enumerating objects: 5, done.
+...
+To github.com:.../Seu-Engenheiro-Eletricista-.git
+   abc1234..def5678  main -> main
+```
+
+Se algum teste falhar:
+```
+✗ Falhou: 1
+
+❌ Push ABORTADO — testes falharam.
+   Corrige os erros acima antes de publicar.
+```
+
+### Pulando o hook em emergência
+
+```bash
+git push --no-verify   # NÃO usar de rotina, só em emergência
+```
+
+### Por que não GitHub Actions?
+
+Pra projetos com 1 desenvolvedor, hook local é mais simples:
+- Configura 1 vez (30 segundos)
+- Funciona offline
+- Sem custo OpenAI em CI
+- Sem secrets pra gerenciar
+- Bloqueia ANTES de subir, não depois
+
+---
+
 ## 🔧 Outros comandos
 
 ```bash
