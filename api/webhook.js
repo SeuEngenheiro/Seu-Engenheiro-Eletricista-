@@ -45,18 +45,35 @@ function obterSaudacao(msg) {
   return 'Olá';
 }
 
-// Monta a mensagem de boas-vindas — MESMO PADRÃO pra todos os planos
-// Linha do plano varia: Gratuito mostra contador X/20, Pro/Premium mostra nome
-function montarBoasVindas(plano, saudacao, usados = 0) {
-  let linhaPlano;
-  if (plano === 'premium') {
-    linhaPlano = '🔴 *Plano Premium:* acesso total — sem limites';
-  } else if (plano === 'pro') {
-    linhaPlano = '🔵 *Plano Profissional:* perguntas ilimitadas';
-  } else {
-    linhaPlano = `🟢 *Plano Gratuito:* ${usados}/20 perguntas/mês`;
+// Variações de boas-vindas — escolhidas aleatoriamente pra soar natural,
+// não automatizado. Princípio (Sprint 1, 02/05/2026):
+//   - Curta (1-2 linhas)
+//   - Sem listar capacidades ("posso te ajudar com...")
+//   - Sem identificação ("eu sou o agente XYZ")
+//   - Tom de engenheiro experiente, não de chatbot
+const VARIACOES_BOAS_VINDAS = [
+  '{saudacao}! Manda a dúvida que eu te ajudo.',
+  '{saudacao}. Em que posso te ajudar com elétrica?',
+  '{saudacao}. Pode mandar a dúvida técnica.',
+  '{saudacao}! Conta o que tá rolando aí.',
+  '{saudacao}. Manda sua pergunta.',
+  '{saudacao}! Pode falar — em que ajudo?',
+];
+
+// Monta a mensagem de boas-vindas — humana, curta, variada.
+// Plano grátis ganha linha discreta sobre saldo SE estiver consumindo.
+function montarBoasVindas(plano, saudacao, restantes = 20) {
+  const variacao = VARIACOES_BOAS_VINDAS[
+    Math.floor(Math.random() * VARIACOES_BOAS_VINDAS.length)
+  ];
+  const principal = variacao.replace('{saudacao}', saudacao);
+
+  // Plano grátis: mostra saldo APENAS se já usou ao menos 1 (não polui
+  // a primeira interação do mês). Texto em itálico = discreto.
+  if (plano === 'gratis' && restantes < 20) {
+    return `${principal}\n\n_(${restantes}/20 perguntas restantes este mês)_`;
   }
-  return `👷‍♂️⚡ ${saudacao}! Eu sou o SEU ENGENHEIRO AI\n\nPosso te ajudar com qualquer dúvida ou problema elétrico, sempre seguindo as normas (NBR 5410 / NR-10).\n\n${linhaPlano}\n\nO que você precisa?`;
+  return principal;
 }
 function ehCalculo(msg) {
   return /\b(calcul|dimens|corrente|queda.*tens|disjuntor|cabo\s*(para|de|mm)|motor|chuveiro|transformador|potência|capacitor|iluminância|\d+\s*(kva|kw|cv|hp|w)|\d+\s*v\s*(tri|mono|bi))\b/i.test(msg);
@@ -651,13 +668,13 @@ export default async function handler(req, res) {
     if (isOla(mensagem)) {
       marcarBoasVindas(telefone);
       const saudacao = obterSaudacao(mensagem);
-      // Pra plano grátis, mostra contador X/20 perguntas no mês
-      let usados = 0;
+      // Pra plano grátis, busca quantas restam (mostra só se já usou)
+      let restantes = 20;
       if (plano === 'gratis') {
         const lim = await verificarLimiteCalculos(telefone);
-        usados = 20 - (lim.restantes ?? 20);
+        restantes = lim.restantes ?? 20;
       }
-      const texto = montarBoasVindas(plano, saudacao, usados);
+      const texto = montarBoasVindas(plano, saudacao, restantes);
       await enviarMensagem(telefone, texto);
       await registrarConversa(telefone, texto, 'agente');
       return res.status(200).json({ ok: true });
