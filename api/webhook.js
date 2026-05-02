@@ -16,6 +16,7 @@ import {
 } from '../lib/supabase.js';
 import { chamarClaude, analisarFoto, buscarPrecosIA, transcreverAudio } from '../lib/claude.js';
 import { enviarMensagem } from '../lib/zapi.js';
+import { detectarDadosFaltantes } from '../lib/dadosFaltantes.js';
 
 // ⚙️ Aumenta timeout do Vercel pra 60s (suficiente pra Claude responder)
 export const config = {
@@ -735,6 +736,18 @@ export default async function handler(req, res) {
     if (respDisj) {
       await enviarMensagem(telefone, respDisj);
       await registrarConversa(telefone, respDisj, 'agente');
+      return res.status(200).json({ ok: true });
+    }
+
+    // ═══ DADOS FALTANTES ═══ (Sprint 2.2 — pergunta antes de chutar)
+    // Se a pergunta é claramente um pedido de cálculo MAS faltam ≥2 dados
+    // críticos (tensão, potência, comprimento), pergunta em vez de chamar
+    // LLM (que poderia chutar valor errado).
+    const dadosFaltantes = detectarDadosFaltantes(msg);
+    if (dadosFaltantes) {
+      console.log(`[DADOS FALTANTES] tipo=${dadosFaltantes.tipo} faltam=${dadosFaltantes.faltantes.map(f=>f.campo).join(', ')}`);
+      await enviarMensagem(telefone, dadosFaltantes.mensagemPergunta);
+      await registrarConversa(telefone, dadosFaltantes.mensagemPergunta, 'agente');
       return res.status(200).json({ ok: true });
     }
 
