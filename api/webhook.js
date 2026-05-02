@@ -122,92 +122,76 @@ const MSG_AGRADECIMENTO = `🤝 Por nada! Se precisar de mais alguma coisa elét
 // CONCEITOS FIXOS — respostas instantâneas pras perguntas mais comuns
 // ═══════════════════════════════════════════════════════════════
 
-const RESP_DR = `🔵 *DR — Diferencial Residual*
+// Conceitos fixos no formato 5 BLOCOS (Sprint 3, 02/05/2026):
+//   [1] Resposta direta (1-2 linhas)
+//   [2] Dados técnicos (item: valor)
+//   [3] Contexto breve (texto fluido sem título)
+//   [4] Alerta (⚠️ só pra risco real)
+//   [5] Norma como rodapé
 
-✅ *Resposta direta*
-Dispositivo que desarma em <40 ms quando detecta fuga ≥30 mA pra terra.
+const RESP_DR = `O *DR* (Diferencial Residual) desarma em <40 ms quando detecta fuga ≥30 mA pra terra.
 
-🛠️ *Justificativa técnica*
-Compara corrente entrando vs. saindo do circuito. Se diferença ≥ IΔn, é fuga (geralmente pra terra) e o DR desarma protegendo contra choque.
+*Função:* proteger pessoas contra choque elétrico
+*Como age:* compara corrente entrando vs. saindo do circuito
+*Sensibilidade típica:* IΔn = 30 mA (residencial)
 
-📋 *Norma*
-NBR 5410 §5.1.3.2.2 — obrigatório em áreas molhadas, banheiros, cozinhas e tomadas externas.
+Se a diferença entre as duas correntes ultrapassa o IΔn, é sinal de fuga — geralmente alguém recebendo choque ou cabo aterrando. O DR corta o circuito antes do choque ser fatal.
 
-💡 *Dica prática*
-DR não substitui disjuntor — disjuntor → fios contra sobrecarga; DR → pessoas contra choque.
+DR não substitui disjuntor: disjuntor protege fios contra sobrecarga, DR protege pessoas contra choque. São complementares.
 
-*Caso queira mais detalhes, é só pedir.*`;
+Base: NBR 5410 §5.1.3.2.2 — obrigatório em áreas molhadas, banheiros, cozinhas e tomadas externas.`;
 
-const RESP_DPS = `🔵 *DPS — Dispositivo de Proteção contra Surtos*
+const RESP_DPS = `O *DPS* (Dispositivo de Proteção contra Surtos) limita sobretensões transitórias pra proteger equipamentos.
 
-✅ *Resposta direta*
-Limita sobretensões transitórias (raios, manobras) pra proteger equipamentos.
+*Função:* desviar para terra picos de raios e manobras na rede
+*Tempo de atuação:* nanossegundos
+*Tensão residual:* limitada a valor seguro pros equipamentos
 
-🛠️ *Justificativa técnica*
-Quando há pico de tensão, o DPS desvia a corrente pra terra evitando que chegue aos equipamentos.
+Quando há pico de tensão na rede, o DPS conduz a corrente excedente pra terra antes que ela chegue aos equipamentos. Sem DPS, eletrônica queima em descargas atmosféricas próximas.
 
-📋 *Norma*
-NBR 5410 §6.3.5 — obrigatório em entrada de instalações com SPDA ou em áreas com risco de raios.
+Classes principais:
+- Classe I — entrada da instalação (raios diretos)
+- Classe II — quadro de distribuição (mais comum)
+- Classe III — junto ao equipamento sensível
 
-📊 *Classes*
-• Classe I: entrada da instalação (raios diretos)
-• Classe II: quadro de distribuição (mais comum)
-• Classe III: junto ao equipamento sensível
+Base: NBR 5410 §6.3.5 — obrigatório em entrada com SPDA ou áreas com risco de raios.`;
 
-*Caso queira mais detalhes, é só pedir.*`;
+const RESP_DISJUNTOR = `O *disjuntor* protege fios contra sobrecarga e curto-circuito, desligando automaticamente.
 
-const RESP_DISJUNTOR = `🔵 *Disjuntor — Conceito*
+*Disparo térmico:* corrente acima do nominal por tempo (sobrecarga)
+*Disparo magnético:* pico instantâneo (curto-circuito)
+*Coordenação:* IB ≤ IN ≤ IZ
 
-✅ *Resposta direta*
-Dispositivo que protege fios contra sobrecarga e curto-circuito desligando automaticamente.
+A regra IB ≤ IN ≤ IZ garante que o disjuntor (IN) atue ANTES do cabo (IZ) entrar em colapso térmico, e DEPOIS da carga útil (IB).
 
-🛠️ *Justificativa técnica*
-- Sobrecarga: corrente acima do nominal por tempo → desarme térmico
-- Curto: pico instantâneo → desarme magnético
+Curvas comerciais:
+- B — cargas resistivas (chuveiro, aquecedor)
+- C — mistas residenciais (TUE, iluminação)
+- D — motores e cargas com partida elevada
 
-📋 *Norma*
-NBR 5410 §5.3.4 + IEC 60898 (disjuntores residenciais).
+Base: NBR 5410 §5.3.4 e IEC 60898.`;
 
-📊 *Curvas comerciais*
-• B → cargas resistivas (chuveiro, aquecedor)
-• C → mistas residenciais (TUE, iluminação)
-• D → motores e cargas com partida elevada
+const RESP_DIF_DR_DISJ = `*Disjuntor* protege FIOS contra sobrecarga/curto. *DR* protege PESSOAS contra choque elétrico. São complementares — não se substituem.
 
-*Caso queira mais detalhes, é só pedir.*`;
+*Disjuntor:* detecta corrente excessiva (térmico + magnético)
+*DR:* detecta fuga de corrente pra terra (≥30 mA)
+*Coexistem:* na mesma instalação, geralmente em série
 
-const RESP_DIF_DR_DISJ = `🔵 *Disjuntor × DR — Diferenças*
+Disjuntor monitora a magnitude da corrente. DR monitora se a corrente que entra é igual à que sai do circuito. Se sair menos do que entra, o "que falta" virou choque ou fuga pra terra.
 
-✅ *Disjuntor*
-• Protege FIOS contra sobrecarga e curto
-• Detecta corrente excessiva
-• NÃO protege contra choque
+⚠️ Você precisa dos DOIS na instalação. Disjuntor sozinho não evita choque; DR sozinho não evita incêndio por sobrecarga.
 
-✅ *DR*
-• Protege PESSOAS contra choque elétrico
-• Detecta fuga de corrente pra terra (≥30 mA)
-• NÃO protege contra sobrecarga ou curto
+Base: NBR 5410 §5.1.3.2.2 (DR obrigatório) e §5.3.4 (disjuntor).`;
 
-⚠️ *Importante*
-Eles NÃO se substituem — você precisa dos DOIS na instalação.
-NBR 5410 obriga ambos em áreas molhadas e tomadas externas.
+const RESP_TENSAO_BR = `A tensão padrão no Brasil varia por região: *127 V*, *220 V* monofásico ou *220/380 V* trifásico.
 
-*Caso queira mais detalhes, é só pedir.*`;
+*127 V (mono):* RJ, ES, MG, parte do Nordeste
+*220 V (mono):* SP, Sul (PR/SC/RS), BA, parte do Nordeste
+*220/380 V (tri):* industrial e residencial trifásico
 
-const RESP_TENSAO_BR = `🔵 *Tensão padrão no Brasil*
+A tensão depende do transformador da concessionária local. Cidades vizinhas podem ter tensões diferentes — antes de comprar equipamento, sempre conferir.
 
-✅ *Resposta direta*
-Depende da região:
-• 127 V (monofásico) — RJ, ES, MG, parte do NE
-• 220 V (monofásico) — SP, sul, PR, BA, parte do NE
-• 220/380 V (trifásico) — industrial e residencial trifásico
-
-📋 *Norma*
-NBR 5440 (transformadores) e padrões da concessionária local.
-
-💡 *Dica*
-Sempre confirme com sua distribuidora local — varia inclusive entre cidades vizinhas.
-
-*Caso queira mais detalhes, é só pedir.*`;
+Base: NBR 5440 (transformadores) e PRODIST da ANEEL.`;
 
 function ehPerguntaDR(msg) {
   return /\b(o\s+que\s+(é|e)\s+(um\s+)?dr|para\s+que\s+serve\s+(o\s+)?dr|conceito\s+(de|do)\s+dr|dr\s+(é|e)\s+(obrigat[óo]rio|necess[áa]rio)|preciso\s+de\s+dr|qual\s+(a\s+)?fun[çc][ãa]o\s+do\s+dr)\b/i.test(msg);
@@ -246,6 +230,18 @@ const FATOR_AGRUP = { 2: 0.80, 3: 0.70, 4: 0.65, 5: 0.60, 6: 0.57 };
 const DISJUNTORES_COMERCIAIS = [6, 10, 16, 20, 25, 32, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630];
 
 // ─────────────────────────────────────────────────────────────────
+// Formatação numérica pt-BR (Sprint 3, 02/05/2026):
+// JS imprime números com PONTO ("455.8"), padrão pt-BR é VÍRGULA
+// ("455,8"). Função utilitária que aplica vírgula em decimais.
+// ─────────────────────────────────────────────────────────────────
+function fmt(n, casas = null) {
+  if (typeof n !== 'number' || isNaN(n)) return String(n);
+  if (Number.isInteger(n)) return String(n);
+  const s = casas !== null ? n.toFixed(casas) : String(n);
+  return s.replace('.', ',');
+}
+
+// ─────────────────────────────────────────────────────────────────
 // Função NÚCLEO — dimensiona cabo a partir de IB já conhecido.
 // Reusada por: tentarCaboPorAmperes, tentarTrafoCabo,
 // tentarDisjuntorPorAmperesQtdCabos. Garante consistência total.
@@ -255,10 +251,9 @@ function dimensionarCabo(ib, contextoIB = '') {
   // ── Caso 1: até 300 mm² (cabo único) ──────────────────────────
   const escolha = TABELA_CABO.find(([_, cap]) => cap >= ib);
   if (escolha) {
-    // Formato 5 blocos: resposta direta + dados + contexto + norma
-    let r = `Cabo de *${escolha[0]} mm²* atende ${ib} A.`;
+    let r = `Cabo de *${fmt(escolha[0])} mm²* atende ${fmt(ib)} A.`;
     if (contextoIB) r = `${contextoIB}${r}`;
-    r += `\n\n*Capacidade:* ${escolha[1]} A (Tabela 36)\n*Material:* cobre, PVC 70°C\n*Instalação:* método B1, 30°C\n\nPara 90°C (EPR/XLPE) ou outros métodos, aplicar fatores de correção.`;
+    r += `\n\n*Capacidade:* ${fmt(escolha[1])} A (Tabela 36)\n*Material:* cobre, PVC 70°C\n*Instalação:* método B1, 30°C\n\nPara 90°C (EPR/XLPE) ou outros métodos, aplicar fatores de correção.`;
     if (ib > 50) r += `\n\n⚠️ Verificar queda de tensão se circuito >30 m.`;
     r += `\n\nBase: NBR 5410 Tabela 36.`;
     return r;
@@ -269,9 +264,9 @@ function dimensionarCabo(ib, contextoIB = '') {
     const fator = FATOR_AGRUP[n];
     const capTotal = IZ_300_MM2 * n * fator;
     if (capTotal >= ib) {
-      let r = `*${n} cabos × 300 mm²* em paralelo por fase atendem ${ib} A.`;
+      let r = `*${n} cabos × 300 mm²* em paralelo por fase atendem ${fmt(ib)} A.`;
       if (contextoIB) r = `${contextoIB}${r}`;
-      r += `\n\n*Capacidade total:* ≈ ${Math.round(capTotal)} A (${IZ_300_MM2} × ${n} × ${fator})\n*Cabo terra (PE):* ${n}× ou proporcional\n*Cabo neutro:* fase ÷ 2 se trifásico balanceado\n*Disjuntor:* compatível com ${ib} A total`;
+      r += `\n\n*Capacidade total:* ≈ ${fmt(Math.round(capTotal))} A (${IZ_300_MM2} × ${n} × ${fmt(fator, 2)})\n*Cabo terra (PE):* ${n}× ou proporcional\n*Cabo neutro:* fase ÷ 2 se trifásico balanceado\n*Disjuntor:* compatível com ${fmt(ib)} A total`;
       r += `\n\nBitolas acima de 300 mm² não são comerciais no Brasil. A solução é dividir a corrente em N condutores idênticos por fase.`;
       r += `\n\n⚠️ Cabos em paralelo exigem mesmo material, seção, comprimento e conexões em ambas extremidades.`;
       r += `\n\nBase: NBR 5410 §6.2.6.4 (paralelos) e Tabela 42 (agrupamento).`;
@@ -280,9 +275,9 @@ function dimensionarCabo(ib, contextoIB = '') {
   }
 
   // ── Caso 3: > 6 cabos = revisar projeto ───────────────────────
-  let r = `⚠️ Corrente de ${ib} A excede o limite prático com cabos em paralelo.`;
+  let r = `⚠️ Corrente de ${fmt(ib)} A excede o limite prático com cabos em paralelo.`;
   if (contextoIB) r = `${contextoIB}${r}`;
-  r += `\n\nMesmo 6 cabos × 300 mm² em paralelo (capacidade ≈ ${Math.round(IZ_300_MM2 * 6 * FATOR_AGRUP[6])} A) ficam no limite.`;
+  r += `\n\nMesmo 6 cabos × 300 mm² em paralelo (capacidade ≈ ${fmt(Math.round(IZ_300_MM2 * 6 * FATOR_AGRUP[6]))} A) ficam no limite.`;
   r += `\n\nAlternativas:\n- Barramento blindado (busway) — padrão para >2000 A\n- Subir tensão (380V → 13,8 kV) reduz corrente proporcionalmente\n- Dividir a alimentação em 2+ circuitos paralelos`;
   r += `\n\nProjeto desse porte exige Engenheiro Eletricista com ART.`;
   r += `\n\nBase: NBR 14039 (média tensão) ou NBR 5410 §6.2.6.4.`;
@@ -313,7 +308,7 @@ function tentarTrafoCabo(msg) {
   const ibCalc = (kva * 1000) / (Math.sqrt(3) * v);
   const ib = Math.round(ibCalc * 10) / 10;
   // Bloco 1+2 do contexto: trafo + cálculo IB. dimensionarCabo continua a partir daqui.
-  const contextoIB = `Trafo de *${kva} kVA em ${v} V* trifásico puxa ≈ *${ib} A*.\n\nIB = S / (√3 × V) = ${kva * 1000} / (√3 × ${v})\n\n`;
+  const contextoIB = `Trafo de *${fmt(kva)} kVA em ${fmt(v)} V* trifásico puxa ≈ *${fmt(ib)} A*.\n\nIB = S / (√3 × V) = ${fmt(kva * 1000)} / (√3 × ${fmt(v)})\n\n`;
   return dimensionarCabo(ib, contextoIB);
 }
 
@@ -337,9 +332,9 @@ function tentarCabosBitolaQtd(msg) {
 
   // Caso A: 1 cabo basta
   if (izUnit >= ib) {
-    return `*1 cabo de ${bitola} mm²* atende ${ib} A.
+    return `*1 cabo de ${fmt(bitola)} mm²* atende ${fmt(ib)} A.
 
-*Capacidade unitária:* ${izUnit} A (≥ ${ib} A)
+*Capacidade unitária:* ${fmt(izUnit)} A (≥ ${fmt(ib)} A)
 *Material:* cobre, PVC 70°C
 *Instalação:* método B1, 30°C
 
@@ -353,13 +348,13 @@ Base: NBR 5410 Tabela 36.`;
     const fator = FATOR_AGRUP[n];
     const cap = izUnit * n * fator;
     if (cap >= ib) {
-      return `*${n} cabos × ${bitola} mm²* em paralelo atendem ${ib} A.
+      return `*${n} cabos × ${fmt(bitola)} mm²* em paralelo atendem ${fmt(ib)} A.
 
-*Capacidade total:* ≈ ${Math.round(cap)} A (${izUnit} × ${n} × ${fator})
-*Fator de agrupamento:* ${fator} (${n} cabos no mesmo eletroduto)
+*Capacidade total:* ≈ ${fmt(Math.round(cap))} A (${fmt(izUnit)} × ${n} × ${fmt(fator, 2)})
+*Fator de agrupamento:* ${fmt(fator, 2)} (${n} cabos no mesmo eletroduto)
 *Cabo terra (PE):* N× ou proporcional
 
-O fator de agrupamento é OBRIGATÓRIO em paralelos. Sem ele há risco de superaquecimento — capacidade real fica menor que ${izUnit} × ${n}.
+O fator de agrupamento é OBRIGATÓRIO em paralelos. Sem ele há risco de superaquecimento — capacidade real fica menor que ${fmt(izUnit)} × ${n}.
 
 ⚠️ Cabos em paralelo exigem mesmo material, seção, comprimento e conexões em ambas extremidades.
 
@@ -368,9 +363,9 @@ Base: NBR 5410 §6.2.6.4 e Tabela 42.`;
   }
 
   // Caso C: nem 6 cabos da bitola escolhida bastam → sugerir subir bitola
-  return `⚠️ ${bitola} mm² não atende ${ib} A nem com 6 em paralelo.
+  return `⚠️ ${fmt(bitola)} mm² não atende ${fmt(ib)} A nem com 6 em paralelo.
 
-*Capacidade máxima possível:* ${Math.round(izUnit * 6 * FATOR_AGRUP[6])} A (< ${ib} A)
+*Capacidade máxima possível:* ${fmt(Math.round(izUnit * 6 * FATOR_AGRUP[6]))} A (< ${fmt(ib)} A)
 
 Alternativas:
 - Subir bitola para *300 mm²* (maior comercial) e refazer o cálculo
@@ -386,9 +381,9 @@ function tentarDisjuntorPorAmperes(msg) {
   const ib = parseFloat(m[1].replace(',', '.'));
   const escolha = DISJUNTORES_COMERCIAIS.find(c => c >= ib);
   if (!escolha) return null;
-  return `Disjuntor de *${escolha} A* para ${ib} A nominais.
+  return `Disjuntor de *${fmt(escolha)} A* para ${fmt(ib)} A nominais.
 
-*Próximo comercial:* ${escolha} A (regra IB ≤ IN ≤ IZ)
+*Próximo comercial:* ${fmt(escolha)} A (regra IB ≤ IN ≤ IZ)
 *Curva C:* cargas residenciais (TUE, iluminação)
 *Curva D:* motores ou cargas com partida elevada
 
