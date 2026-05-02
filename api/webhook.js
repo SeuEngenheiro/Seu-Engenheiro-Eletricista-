@@ -314,6 +314,7 @@ const MSG_PLANOS = `📊 *Planos — Seu Engenheiro AI*\n\n━━━━━━━
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
+  const tStart = Date.now();
   try {
     const body = req.body;
 
@@ -418,9 +419,12 @@ export default async function handler(req, res) {
       }
     }
 
-    // Registra conversa (com flag de áudio se aplicável)
+    // Registra conversa do usuário em background (fire-and-forget) —
+    // não precisa esperar pra processar. Economiza ~100ms no caminho crítico.
     const prefixoAudio = temAudio ? '[áudio] ' : '';
-    await registrarConversa(telefone, prefixoAudio + mensagem, 'usuario');
+    registrarConversa(telefone, prefixoAudio + mensagem, 'usuario').catch(e =>
+      console.error('[REGISTRAR USUARIO]', e?.message)
+    );
     const msg = mensagem.toLowerCase().trim();
 
     // ═══ BOAS-VINDAS ═══
@@ -575,8 +579,11 @@ export default async function handler(req, res) {
     // ═══ CONVERSÕES ═══
     if (ehConversao(msg)) {
       const resposta = await chamarClaude(telefone, mensagem, plano);
-      await registrarConversa(telefone, resposta, 'agente');
-      await enviarMensagem(telefone, resposta);
+      await Promise.all([
+        enviarMensagem(telefone, resposta),
+        registrarConversa(telefone, resposta, 'agente')
+      ]);
+      console.log(`[WEBHOOK CONV ${Date.now() - tStart}ms]`);
       return res.status(200).json({ ok: true });
     }
 
@@ -591,9 +598,13 @@ export default async function handler(req, res) {
         }
       }
       const resposta = await chamarClaude(telefone, mensagem, plano);
-      await registrarCalculo(telefone, 'calculo', { mensagem }, { resposta });
-      await registrarConversa(telefone, resposta, 'agente');
-      await enviarMensagem(telefone, resposta);
+      // Envia ao usuário e grava registros em paralelo
+      await Promise.all([
+        enviarMensagem(telefone, resposta),
+        registrarCalculo(telefone, 'calculo', { mensagem }, { resposta }),
+        registrarConversa(telefone, resposta, 'agente')
+      ]);
+      console.log(`[WEBHOOK CALC ${Date.now() - tStart}ms]`);
       return res.status(200).json({ ok: true });
     }
 
@@ -610,8 +621,12 @@ export default async function handler(req, res) {
 
     // ═══ IA RESPONDE ═══
     const resposta = await chamarClaude(telefone, mensagem, plano);
-    await registrarConversa(telefone, resposta, 'agente');
-    await enviarMensagem(telefone, resposta);
+    // Z-API e log do agente em PARALELO — usuário recebe mais rápido
+    await Promise.all([
+      enviarMensagem(telefone, resposta),
+      registrarConversa(telefone, resposta, 'agente')
+    ]);
+    console.log(`[WEBHOOK TOTAL ${Date.now() - tStart}ms] msg="${mensagem.slice(0, 60)}"`);
     return res.status(200).json({ ok: true });
 
   } catch (err) {
