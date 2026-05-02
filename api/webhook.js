@@ -67,7 +67,41 @@ function ehConversao(msg) {
   return /\b(convert(er|e|a)|transforma(r)?|quanto\s*é|em\s*(watts?|kw|cv|hp|volts?|amperes?|hz|rpm|°c|°f|kelvin|awg|mm²)|de\s*(cv|hp|kw|mw|kva|kwh|v|a|hz|rpm|°c|°f)\s*para)\b/i.test(msg);
 }
 function ehMaterial(msg) {
-  return /\b(material|lista de material|orcamento|orçamento|lista de materiais|projeto.*material|material.*projeto)\b/i.test(msg);
+  // Bug fix (02/05/2026): regex original pegava "material" em qualquer
+  // contexto, gerando falso positivo em perguntas técnicas tipo
+  // "resistividade do material", "tipo de material condutor".
+  // Quando isso acontecia, webhook desviava pra rota de lista de
+  // materiais e bot anexava lista indevida na resposta.
+  //
+  // Nova regra: 2 estágios.
+  //   1) Bloquear contextos físico-técnicos onde "material" é
+  //      propriedade física (não pedido comercial).
+  //   2) Aceitar APENAS frases com intenção comercial clara
+  //      (lista, orçamento, comprar, materiais necessários, etc).
+  const m = (msg || '').toLowerCase();
+
+  // Estágio 1 — exclusões (contexto físico-técnico)
+  const ehMaterialFisico =
+    // "resistividade/tipo/propriedade/condutividade do material"
+    /\b(resistividade|tipo|caracter[íi]stica|propriedade|densidade|coeficiente|condutividade|composi[çc][ãa]o|estrutura)\s+(do|de|dos|das)\s+material/i.test(m) ||
+    // "material condutor/isolante/magnético/dielétrico/ferromagnético"
+    /\bmaterial(?:\s+\w+)?\s+(condutor|isolant|magn[ée]tic|diel[ée]tric|ferromagn[ée]tic|paramagn[ée]tic|n[ãa]o\s+linear)/i.test(m) ||
+    // "do material" como complemento físico isolado
+    /\b(comportamento|aquecimento|temperatura|fadiga|dilata[çc][ãa]o)\s+(do|de|dos|das)\s+material/i.test(m);
+
+  if (ehMaterialFisico) return false;
+
+  // Estágio 2 — intenção comercial explícita
+  return (
+    /\blista\s+de\s+materia[il]s?\b/i.test(m) ||
+    /\bor[çc]amento\b/i.test(m) ||
+    /\b(quero|preciso|gostaria|posso)\s+comprar\b/i.test(m) ||
+    /\b(o\s+que|que)\s+(eu\s+)?comprar\b/i.test(m) ||
+    /\bmateria[il]s?\s+(necess[áa]rios?|para\s+(montar|instalar|comprar|obra|projeto|execu[çc][ãa]o)|de\s+(constru[çc][ãa]o|obra))\b/i.test(m) ||
+    // "projeto" + "material" próximos = lista pra projeto
+    /\bprojeto[^.]{0,40}materia[il]s?\b/i.test(m) ||
+    /\bmateria[il]s?[^.]{0,40}projeto\b/i.test(m)
+  );
 }
 function ehOutraNorma(msg) {
   return /\b(nr-10|nr10|nr-12|nr12|nr-33|nr33|nr-35|nr35|nbr\s*5419|nbr5419|nbr\s*5413|nbr5413|nbr\s*14039|nbr14039)\b/i.test(msg);
