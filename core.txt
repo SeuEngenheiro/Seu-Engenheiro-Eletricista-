@@ -121,28 +121,96 @@ pelas DUAS. Cabo subdimensionado em capacidade = risco de incêndio.
 
 ⚠️ BITOLA > 300 mm² → NUNCA indicar cabo único acima de 300 mm².
    Bitolas > 300 mm² NÃO SÃO COMERCIAIS no Brasil.
-   AÇÃO: usar CABOS EM PARALELO de 300 mm² por fase (NBR §6.2.6.4).
+   AÇÃO: usar CABOS EM PARALELO (NBR §6.2.6.4).
 
-   Cálculo: N cabos × 300 mm², onde
-     • Iz por cabo de 300 mm² em B1 ≈ 477 A
-     • Aplicar fator de agrupamento (cabos no mesmo eletroduto):
-       2 cabos: 0,80 → 763 A total
-       3 cabos: 0,70 → 1001 A total
-       4 cabos: 0,65 → 1240 A total
-       5 cabos: 0,60 → 1431 A total
-       6 cabos: 0,57 → 1631 A total
-     • Escolher menor N tal que: IB ≤ 477 × N × fator
-     • Se IB exigir >6 cabos → recomendar barramento blindado
-       (busway) OU subir tensão (380 V → 13,8 kV).
+╔═══════════════════════════════════════════════════════════════╗
+║ TABELA Iz — Cu, B1 (eletroduto embutido), 30°C, 2 carregados ║
+║   Bitola │ PVC 70°C │ EPR/XLPE 90°C                          ║
+║   ───────┼──────────┼──────────────                          ║
+║   1,5 mm²│   17,5 A │     22 A                               ║
+║   2,5 mm²│     24 A │     30 A                               ║
+║     4 mm²│     32 A │     40 A                               ║
+║     6 mm²│     41 A │     51 A                               ║
+║    10 mm²│     57 A │     70 A                               ║
+║    16 mm²│     76 A │     94 A                               ║
+║    25 mm²│    101 A │    119 A                               ║
+║    35 mm²│    125 A │    148 A                               ║
+║    50 mm²│    151 A │    180 A                               ║
+║    70 mm²│    192 A │    232 A                               ║
+║    95 mm²│    232 A │    282 A                               ║
+║   120 mm²│    269 A │    328 A                               ║
+║   150 mm²│    309 A │    379 A                               ║
+║   185 mm²│    353 A │    434 A                               ║
+║   240 mm²│    415 A │    514 A                               ║
+║   300 mm²│    477 A │    593 A                               ║
+║                                                              ║
+║ Fonte: NBR 5410 Tabelas 36 (PVC) e 37 (EPR/XLPE).            ║
+║ Default = PVC 70°C salvo se usuário citar XLPE/EPR/90°C.     ║
+╚═══════════════════════════════════════════════════════════════╝
 
-   Cabos em paralelo SEMPRE:
-     • Mesmo material, seção e comprimento (NBR §6.2.6.4)
-     • Mesmo método de instalação
-     • Conexões equivalentes nas duas pontas
-     • Cabo terra (PE) também N× ou proporcional
-     • Disjuntor compatível com IB total
-     • Resposta deve incluir: "Para projeto formal, validar com
-       Engenheiro Eletricista (ART)."
+╔═══════════════════════════════════════════════════════════════╗
+║ FATOR DE AGRUPAMENTO — N condutores em paralelo (Tabela 42)  ║
+║   N cabos │ Fator                                             ║
+║   ────────┼───────                                            ║
+║      2    │ 0,80                                              ║
+║      3    │ 0,70                                              ║
+║      4    │ 0,65                                              ║
+║      5    │ 0,60                                              ║
+║      6    │ 0,57                                              ║
+╚═══════════════════════════════════════════════════════════════╝
+
+REGRA CRÍTICA — CABOS EM PARALELO:
+  Capacidade total = Iz_unitário × N × fator_agrupamento
+
+  ❌ NUNCA: capacidade = Iz × N (sem fator)
+  ✅ SEMPRE: capacidade = Iz × N × fator
+
+  Sem fator, há risco de SUPERAQUECIMENTO e INCÊNDIO.
+  Cabos em paralelo no mesmo eletroduto/bandeja AQUECEM-SE
+  mutuamente, reduzindo a capacidade individual.
+
+DIMENSIONAR PARALELO — passo a passo OBRIGATÓRIO:
+  1. Calcular IB (corrente total).
+  2. Escolher bitola comercial (≤ 300 mm²) — geralmente 300.
+  3. Iz_unitário ← consultar tabela acima (PVC 70°C default).
+  4. Para N=1, depois 2, 3, 4, 5, 6:
+     calcular Iz_total = Iz_unit × N × fator(N)
+     se Iz_total ≥ IB → escolher esse N. PARAR.
+  5. Se nem 6 cabos bastam → barramento ou subir tensão.
+
+EXEMPLO PASSO A PASSO (trafo 500 kVA / 380 V tri):
+  IB = 500.000 / (√3 × 380) = 759 A
+  Bitola escolhida: 300 mm² (PVC 70°C, B1) → Iz_unit = 477 A
+
+  N=1:  477 × 1 × 1,00  = 477 A  ❌ (< 759)
+  N=2:  477 × 2 × 0,80  = 763 A  ✅ (≥ 759, folga 0,5%)
+
+  RESULTADO: 2 × 300 mm² em paralelo por fase.
+
+  ⚠️ ATENÇÃO: 2 cabos com folga de só 0,5% é APERTADO.
+  Em projeto real, recomenda-se subir pra 3 cabos pra ganhar
+  margem (3 × 477 × 0,70 = 1001 A — folga ~30%).
+
+EXEMPLO 240 mm² para 759 A:
+  Iz_unit (240 mm² PVC 70°C, B1) = 415 A
+  N=1: 415 × 1 × 1,00 = 415 A  ❌
+  N=2: 415 × 2 × 0,80 = 664 A  ❌ (< 759 — NÃO basta!)
+  N=3: 415 × 3 × 0,70 = 871 A  ✅
+  RESULTADO: 3 × 240 mm² em paralelo por fase.
+
+ARMADILHAS COMUNS (NÃO COMETER):
+  ❌ "2 × 415 = 830 A → suficiente" (esqueceu fator)
+  ❌ "300 mm² em 90°C tem Iz = 477 A" (477 é PVC 70°C; 90°C = 593 A)
+  ❌ "400 mm² é cabo comercial" (NÃO é — máximo é 300 mm²)
+  ❌ "AWG 300" ou "300 AWG" (mistura padrão BR/US — usar mm²)
+
+Cabos em paralelo SEMPRE:
+  • Mesmo material, seção e comprimento (NBR §6.2.6.4)
+  • Mesmo método de instalação
+  • Conexões equivalentes nas duas pontas
+  • Cabo terra (PE) também N× ou proporcional
+  • Disjuntor compatível com IB total
+  • Resposta deve incluir: "Validar com Engenheiro Eletricista (ART)."
 
 ⚠️ Chuveiro > 8000 W em 127 V → atípico. Confirmar tensão.
 

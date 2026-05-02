@@ -208,36 +208,35 @@ const FATOR_AGRUP = { 2: 0.80, 3: 0.70, 4: 0.65, 5: 0.60, 6: 0.57 };
 
 const DISJUNTORES_COMERCIAIS = [6, 10, 16, 20, 25, 32, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630];
 
-function tentarCaboPorAmperes(msg) {
-  const m = msg.match(/cabo\s+(?:p\/|para|de)\s+(\d+(?:[.,]\d+)?)\s*a(?:mp[èeé]res?)?\b/i);
-  if (!m) return null;
-  const ib = parseFloat(m[1].replace(',', '.'));
+// ─────────────────────────────────────────────────────────────────
+// Função NÚCLEO — dimensiona cabo a partir de IB já conhecido.
+// Reusada por: tentarCaboPorAmperes, tentarTrafoCabo,
+// tentarDisjuntorPorAmperesQtdCabos. Garante consistência total.
+// ─────────────────────────────────────────────────────────────────
 
+function dimensionarCabo(ib, titulo, contextoExtra = '') {
   // ── Caso 1: até 300 mm² (cabo único) ──────────────────────────
   const escolha = TABELA_CABO.find(([_, cap]) => cap >= ib);
   if (escolha) {
-    return `*Cabo para ${ib} A*
+    return `*${titulo}*${contextoExtra}
 
 ⚡ *Resultado*
 Cabo *${escolha[0]} mm²* (capacidade ${escolha[1]} A — NBR 5410 Tabela 36)
 
-📌 *Obs.:* assume cobre, PVC 70°C, método B1 (eletroduto embutido), 30°C.
-Para outras condições, aplicar fatores de correção (agrupamento, temperatura).
+📌 *Obs.:* cobre, PVC 70°C, método B1 (eletroduto embutido), 30°C.
+Para 90°C (EPR/XLPE) ou outros métodos, aplicar fatores.
 
-⚠️ Verificar também queda de tensão se distância >30 m.
+⚠️ Verificar queda de tensão se distância >30 m.
 
 *Caso queira mais detalhes, é só pedir.*`;
   }
 
-  // ── Caso 2: acima de 300 mm² → cabos em paralelo ──────────────
-  // Bitolas > 300 mm² NÃO são comerciais. NBR §6.2.6.4 permite
-  // condutores em paralelo (mesmo material, mesma seção, mesmo
-  // comprimento) com fator de agrupamento aplicado.
+  // ── Caso 2: > 300 mm² → cabos em paralelo (NBR §6.2.6.4) ──────
   for (let n = 2; n <= 6; n++) {
     const fator = FATOR_AGRUP[n];
     const capTotal = IZ_300_MM2 * n * fator;
     if (capTotal >= ib) {
-      return `*Cabo para ${ib} A*
+      return `*${titulo}*${contextoExtra}
 
 ⚡ *Resultado*
 *${n} cabos × 300 mm² em paralelo por fase*
@@ -255,7 +254,7 @@ NBR 5410 §6.2.6.4 permite cabos em paralelo, desde que:
 🔧 *Atenção pro projeto*
 • Cabo terra (PE) também ${n}× ou bitola maior proporcional
 • Cabo neutro: trifásico balanceado pode ser N = ½ fase
-• Disjuntor compatível com a corrente total
+• Disjuntor compatível com a corrente total (${ib} A)
 • Validar com Engenheiro Eletricista (ART) — cabos em paralelo
   exigem cuidado extra na conexão (terminais, lugs, torques).
 
@@ -263,20 +262,132 @@ NBR 5410 §6.2.6.4 permite cabos em paralelo, desde que:
     }
   }
 
-  // ── Caso 3: mais de 6 cabos = revisar projeto ─────────────────
-  return `*Cabo para ${ib} A*
+  // ── Caso 3: > 6 cabos = revisar projeto ───────────────────────
+  return `*${titulo}*${contextoExtra}
 
 ⚠️ *Corrente muito elevada (>${Math.round(IZ_300_MM2 * 6 * FATOR_AGRUP[6])} A)*
 
 Mesmo com 6 cabos × 300 mm² em paralelo, a capacidade fica no
 limite. Recomenda-se:
-• *Barramento blindado* (busway) — solução padrão p/ correntes >2000 A
+• *Barramento blindado* (busway) — padrão p/ correntes >2000 A
 • *Subir a tensão* (380 V → 13,8 kV) reduz corrente proporcionalmente
-• *Dividir a alimentação* em 2 ou mais circuitos paralelos
+• *Dividir a alimentação* em 2+ circuitos paralelos
 
 📋 *Norma*
 NBR 14039 (média tensão) ou NBR 5410 §6.2.6.4 (paralelos).
 Projeto desse porte exige Engenheiro Eletricista com ART.
+
+*Caso queira mais detalhes, é só pedir.*`;
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Bypass 1: "cabo pra X A"
+// ─────────────────────────────────────────────────────────────────
+function tentarCaboPorAmperes(msg) {
+  const m = msg.match(/cabo\s+(?:p\/|para|de|pra)\s+(\d+(?:[.,]\d+)?)\s*a(?:mp[èeé]res?)?\b/i);
+  if (!m) return null;
+  const ib = parseFloat(m[1].replace(',', '.'));
+  return dimensionarCabo(ib, `Cabo para ${ib} A`);
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Bypass 2: "trafo X kVA Y V" / "transformador X kVA Y V"
+// Calcula corrente nominal e dimensiona cabo automaticamente.
+// IB = S(kVA) × 1000 / (√3 × V) — assume sempre trifásico (padrão BR)
+// ─────────────────────────────────────────────────────────────────
+function tentarTrafoCabo(msg) {
+  // Captura "trafo|transformador" + kVA + V (qualquer ordem entre, com palavras intermediárias)
+  // Ex: "cabo pra trafo 500 kva 380v secundário"
+  //     "transformador de 1000 kva em 380 v"
+  //     "qual cabo trafo 750kva 220v tri"
+  const m = msg.match(/(?:trafo|transformador)[\s\S]{0,80}?(\d+(?:[.,]\d+)?)\s*kva[\s\S]{0,30}?(\d+(?:[.,]\d+)?)\s*v(?:olt)?/i);
+  if (!m) return null;
+  const kva = parseFloat(m[1].replace(',', '.'));
+  const v = parseFloat(m[2].replace(',', '.'));
+  if (kva <= 0 || v <= 0) return null;
+  const ibCalc = (kva * 1000) / (Math.sqrt(3) * v);
+  const ib = Math.round(ibCalc * 10) / 10; // 1 casa decimal
+  const titulo = `Cabo p/ trafo ${kva} kVA — ${v} V trifásico`;
+  const contextoExtra = `\n\n📐 *Cálculo da corrente*\nIB = S / (√3 × V) = ${kva}.000 / (√3 × ${v}) ≈ *${ib} A*`;
+  return dimensionarCabo(ib, titulo, contextoExtra);
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Bypass 3: "quantos cabos X mm² pra Y A"
+// Aplica regra de agrupamento corretamente. Aceita variações:
+//   "quantos cabos 240 mm² pra 759 a"
+//   "quantos cabos de 300mm para 800 amperes"
+//   "cabos 120mm² em paralelo pra 400a"
+// ─────────────────────────────────────────────────────────────────
+function tentarCabosBitolaQtd(msg) {
+  const m = msg.match(/(?:quantos\s+)?cabos?\s+(?:de\s+)?(\d+(?:[.,]\d+)?)\s*mm[²2]?[\s\S]{0,30}?(?:p\/|pra|para)\s+(\d+(?:[.,]\d+)?)\s*a(?:mp[èeé]res?)?\b/i);
+  if (!m) return null;
+  const bitola = parseFloat(m[1].replace(',', '.'));
+  const ib = parseFloat(m[2].replace(',', '.'));
+  if (bitola <= 0 || ib <= 0) return null;
+
+  const linha = TABELA_CABO.find(([b]) => b === bitola);
+  if (!linha) return null; // bitola não comercial → deixa LLM tratar
+  const izUnit = linha[1];
+
+  // Caso A: 1 cabo basta
+  if (izUnit >= ib) {
+    return `*${bitola} mm² para ${ib} A*
+
+⚡ *Resultado*
+*1 cabo de ${bitola} mm² é suficiente* — capacidade ${izUnit} A ≥ ${ib} A.
+Não precisa cabos em paralelo nesse caso.
+
+📌 *Obs.:* assume PVC 70°C, B1, 30°C. Pra outras condições aplicar fatores.
+
+*Caso queira mais detalhes, é só pedir.*`;
+  }
+
+  // Caso B: precisa N cabos em paralelo
+  for (let n = 2; n <= 6; n++) {
+    const fator = FATOR_AGRUP[n];
+    const cap = izUnit * n * fator;
+    if (cap >= ib) {
+      return `*${bitola} mm² para ${ib} A*
+
+⚡ *Resultado*
+*${n} cabos × ${bitola} mm² em paralelo por fase*
+Capacidade total ≈ ${Math.round(cap)} A
+(${izUnit} A × ${n} × ${fator} agrupamento)
+
+📌 *FATOR DE AGRUPAMENTO É OBRIGATÓRIO em paralelos*
+NBR 5410 Tabela 42. Sem o fator, há risco de superaquecimento
+e degradação da isolação. Fatores típicos no mesmo eletroduto:
+• 2 cabos: 0,80
+• 3 cabos: 0,70
+• 4 cabos: 0,65
+• 5 cabos: 0,60
+• 6 cabos: 0,57
+
+🔧 *Cabos em paralelo* (NBR §6.2.6.4):
+• Mesmo material, seção e comprimento
+• Mesma instalação e conexões
+• PE também N× ou proporcional
+
+⚠️ Validar com Engenheiro Eletricista (ART).
+
+*Caso queira mais detalhes, é só pedir.*`;
+    }
+  }
+
+  // Caso C: nem 6 cabos da bitola escolhida bastam → sugerir subir bitola
+  return `*${bitola} mm² para ${ib} A*
+
+⚠️ *Não atende com até 6 cabos × ${bitola} mm² em paralelo*
+
+Capacidade máxima possível: ${Math.round(izUnit * 6 * FATOR_AGRUP[6])} A < ${ib} A.
+
+Opções:
+• Subir bitola pra *300 mm²* (maior comercial) e refazer o cálculo
+• Barramento blindado (busway)
+• Subir tensão (380 V → 13,8 kV) — reduz corrente proporcionalmente
+
+📋 NBR 14039 (média tensão) ou Engenheiro Eletricista (ART).
 
 *Caso queira mais detalhes, é só pedir.*`;
 }
@@ -553,6 +664,20 @@ export default async function handler(req, res) {
     }
 
     // ═══ CABO/DISJUNTOR PARAMÉTRICO ═══ (lookup tabela NBR 5410, sem LLM)
+    // Ordem importa: trafo PRIMEIRO (regex específica), depois bitola+amperes,
+    // depois "cabo pra X A" genérico.
+    const respTrafo = tentarTrafoCabo(msg);
+    if (respTrafo) {
+      await enviarMensagem(telefone, respTrafo);
+      await registrarConversa(telefone, respTrafo, 'agente');
+      return res.status(200).json({ ok: true });
+    }
+    const respBitolaQtd = tentarCabosBitolaQtd(msg);
+    if (respBitolaQtd) {
+      await enviarMensagem(telefone, respBitolaQtd);
+      await registrarConversa(telefone, respBitolaQtd, 'agente');
+      return res.status(200).json({ ok: true });
+    }
     const respCabo = tentarCaboPorAmperes(msg);
     if (respCabo) {
       await enviarMensagem(telefone, respCabo);
