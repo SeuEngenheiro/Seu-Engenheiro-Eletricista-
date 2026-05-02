@@ -11,7 +11,8 @@ import {
   registrarBuscaPreco,
   buscarHistorico,
   jaProcessouMensagem,
-  marcarMensagemProcessada
+  marcarMensagemProcessada,
+  proximoResetMensal
 } from '../lib/supabase.js';
 import { chamarClaude, analisarFoto, buscarPrecosIA, transcreverAudio } from '../lib/claude.js';
 import { enviarMensagem } from '../lib/zapi.js';
@@ -502,14 +503,25 @@ function montarPlanoAtual(plano, restantes) {
   }
   // Grátis
   const usados = 20 - (restantes ?? 20);
-  return `📊 *Seu plano atual: 🟢 GRATUITO*\n\n• 20 perguntas/mês — usadas: *${usados}/20*\n• Resposta técnica padrão\n• Direcionamento conforme NBR 5410\n\n💡 Quer perguntas ilimitadas + cálculos detalhados?\n🔵 *PROFISSIONAL* (R$ 24,99/mês):\n👉 https://pay.kiwify.com.br/mVAGqLU\n\n🔴 *PREMIUM* (R$ 49,99/mês):\n👉 https://pay.kiwify.com.br/Mns2lfH`;
+  const reset = proximoResetMensal();
+  return `📊 *Seu plano atual: 🟢 GRATUITO*\n\n• 20 perguntas/mês — *${usados}/20 usadas* (${restantes ?? 20} restantes)\n• 🔄 Reset em *${reset}* (próximo mês)\n• Resposta técnica padrão\n• Direcionamento conforme NBR 5410\n\n💡 Quer perguntas ilimitadas + cálculos detalhados?\n🔵 *PROFISSIONAL* (R$ 24,99/mês):\n👉 https://pay.kiwify.com.br/mVAGqLU\n\n🔴 *PREMIUM* (R$ 49,99/mês):\n👉 https://pay.kiwify.com.br/Mns2lfH`;
 }
 
 // Boas-vindas geradas dinamicamente por montarBoasVindas() — adapta saudação ao plano + saudação detectada do usuário (Bom dia / Boa tarde / Olá)
 
-const MSG_LIMITE_CALCULOS = `⚠️ Você atingiu o limite de *20 perguntas/mês* do plano gratuito.\n\nPra continuar sem limites:\n\n📊 *Planos — Seu Engenheiro AI*\n\n━━━━━━━━━━━━━━━━━━━━━━━━\n🔵 *Plano Profissional — R$ 24,99/mês*\n• Perguntas ilimitadas\n• Cálculos ilimitados\n• Dimensionamento detalhado\n• Lista de materiais (SEM PREÇOS)\n• Especificação técnica de materiais\n👉 https://pay.kiwify.com.br/mVAGqLU\n\n━━━━━━━━━━━━━━━━━━━━━━━━\n🔴 *Plano Premium — R$ 49,99/mês*\n• Tudo do Profissional\n• 💰 Lista de materiais (COM PREÇOS)\n• 📷 Análise de fotos ilimitada\n• 📜 Histórico completo acessível\n• 🏗️ Análise de projeto (fotos + planta)\n👉 https://pay.kiwify.com.br/Mns2lfH\n\n*✅ Pronto pra começar? Assine um plano agora.*`;
+// Mensagens de limite atingido — funções pra incluir data dinâmica do
+// próximo reset (dia 1° do mês seguinte). Antes eram constantes e o
+// usuário não sabia quando o saldo volta. Opção A escolhida em 02/05/2026:
+// manter limite mensal (20) mas COMUNICAR com clareza.
+function msgLimiteCalculos() {
+  const reset = proximoResetMensal();
+  return `⚠️ Você atingiu o limite de *20 perguntas/mês* do plano gratuito.\n\n🔄 *Reset:* ${reset} (próximo mês, à meia-noite).\n\nPra continuar sem limites agora:\n\n📊 *Planos — Seu Engenheiro AI*\n\n━━━━━━━━━━━━━━━━━━━━━━━━\n🔵 *Plano Profissional — R$ 24,99/mês*\n• Perguntas ilimitadas\n• Cálculos ilimitados\n• Dimensionamento detalhado\n• Lista de materiais (SEM PREÇOS)\n• Especificação técnica de materiais\n👉 https://pay.kiwify.com.br/mVAGqLU\n\n━━━━━━━━━━━━━━━━━━━━━━━━\n🔴 *Plano Premium — R$ 49,99/mês*\n• Tudo do Profissional\n• 💰 Lista de materiais (COM PREÇOS)\n• 📷 Análise de fotos ilimitada\n• 📜 Histórico completo acessível\n• 🏗️ Análise de projeto (fotos + planta)\n👉 https://pay.kiwify.com.br/Mns2lfH\n\n*✅ Pronto pra começar? Assine um plano agora.*`;
+}
 
-const MSG_LIMITE_PERGUNTAS = `⚠️ Você atingiu o limite de *20 perguntas/mês* do plano gratuito.\n\n🔵 PROFISSIONAL: https://pay.kiwify.com.br/mVAGqLU\n🔴 PREMIUM: https://pay.kiwify.com.br/Mns2lfH`;
+function msgLimitePerguntas() {
+  const reset = proximoResetMensal();
+  return `⚠️ Você atingiu o limite de *20 perguntas/mês* do plano gratuito.\n\n🔄 *Reset:* ${reset} (próximo mês, à meia-noite).\n\n🔵 PROFISSIONAL: https://pay.kiwify.com.br/mVAGqLU\n🔴 PREMIUM: https://pay.kiwify.com.br/Mns2lfH`;
+}
 const MSG_NORMA_BLOQUEADA = `📋 Outras normas disponíveis nos planos *PROFISSIONAL* e *PREMIUM*.\n\nNo grátis: *NBR 5410* incluída.\n\n🔵 PROFISSIONAL: https://pay.kiwify.com.br/mVAGqLU\n🔴 PREMIUM: https://pay.kiwify.com.br/Mns2lfH`;
 const MSG_PLANOS = `📊 *Planos — Seu Engenheiro AI*\n\n━━━━━━━━━━━━━━━━━━━━━━━━\n🟢 *Plano Gratuito — R$ 0*\n• 20 perguntas / mês\n• Resposta técnica padrão (modo curto)\n• Direcionamento conforme NBR 5410\n\nIndicado pra dúvidas simples e consultas rápidas.\n\n━━━━━━━━━━━━━━━━━━━━━━━━\n🔵 *Plano Profissional — R$ 24,99/mês*\n• Perguntas ilimitadas\n• Cálculos ilimitados\n• Dimensionamento detalhado\n• Lista de materiais (SEM PREÇOS)\n• Especificação técnica de materiais\n\nIndicado pra quem executa serviços.\n\n👉 https://pay.kiwify.com.br/mVAGqLU\n\n━━━━━━━━━━━━━━━━━━━━━━━━\n🔴 *Plano Premium — R$ 49,99/mês*\n• Tudo do Profissional\n• 💰 Lista de materiais (COM PREÇOS)\n• 📷 Análise de fotos ilimitada\n• 📜 Histórico completo acessível\n• 🏗️ Análise de projeto (fotos + planta)\n\nIndicado pra uso profissional e projetos.\n\n👉 https://pay.kiwify.com.br/Mns2lfH\n\n*✅ Pronto pra começar? Assine um plano agora.*`;
 
@@ -812,8 +824,9 @@ export default async function handler(req, res) {
       if (plano === 'gratis') {
         const limite = await verificarLimiteCalculos(telefone);
         if (!limite.permitido) {
-          await enviarMensagem(telefone, MSG_LIMITE_CALCULOS);
-          await registrarConversa(telefone, MSG_LIMITE_CALCULOS, 'agente');
+          const txt = msgLimiteCalculos();
+          await enviarMensagem(telefone, txt);
+          await registrarConversa(telefone, txt, 'agente');
           return res.status(200).json({ ok: true });
         }
       }
@@ -832,8 +845,9 @@ export default async function handler(req, res) {
     if (plano === 'gratis' && ehPerguntaTecnica(msg)) {
       const limite = await verificarLimitePerguntas(telefone);
       if (!limite.permitido) {
-        await enviarMensagem(telefone, MSG_LIMITE_PERGUNTAS);
-        await registrarConversa(telefone, MSG_LIMITE_PERGUNTAS, 'agente');
+        const txt = msgLimitePerguntas();
+        await enviarMensagem(telefone, txt);
+        await registrarConversa(telefone, txt, 'agente');
         return res.status(200).json({ ok: true });
       }
       await registrarPergunta(telefone, mensagem);
