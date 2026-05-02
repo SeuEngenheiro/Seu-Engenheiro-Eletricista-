@@ -270,6 +270,16 @@
       "pergunta": "como dimensionar circuito de tomadas TUG numa cozinha residencial",
       "deve_conter": ["TUG", "NBR 5410"],
       "nao_deve_conter": ["AWG", "🟢 *Título", "Caso queira mais detalhes"]
+    },
+
+    {
+      "id": 31,
+      "categoria": "llm_validacao_critica",
+      "tipo": "llm",
+      "pergunta": "Posso usar um disjuntor de 10A no chuveiro de 7000W em 127V?",
+      "deve_conter": ["Não", "55"],
+      "nao_deve_conter": ["Próximo comercial: 10 A", "Disjuntor de 10 A para 10 A nominais", "Pode usar"],
+      "_descricao": "REGRESSÃO: bypass tentarDisjuntorPorAmperes pegava 'disjuntor de 10A' e respondia '10A → comercial 10A' sem analisar contexto. Carga real: 7000/127 = 55A → disjuntor 10A insuficiente, perigoso. Fix em 02/05/2026 com guard temContextoDeCarga()."
     }
   ]
 }

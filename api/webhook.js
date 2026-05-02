@@ -312,7 +312,36 @@ function dimensionarCabo(ib, ctxTrafo = null) {
 // ─────────────────────────────────────────────────────────────────
 // Bypass 1: "cabo pra X A"
 // ─────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────
+// Guard pra bypasses paramétricos:
+// Se a pergunta tem CONTEXTO de carga (potência em W/kW, chuveiro,
+// motor, ar-condicionado, etc), o bypass paramétrico NÃO dispara.
+// Razão: bypass simples "X A → Y mm²" é correto pra perguntas
+// diretas, mas perigoso quando o usuário cita uma carga real e o
+// número de A não bate com a carga.
+//
+// Bug real (02/05/2026): "Posso usar disjuntor de 10A no chuveiro
+// de 7000W em 127V?" → bypass respondia "10A → comercial 10A" sem
+// notar que 7000W/127V puxa 55A — disjuntor de 10A vai desarmar
+// imediatamente OU se o usuário subir o disjuntor, queima o cabo.
+// Solução: deixar essas perguntas com contexto irem pro LLM, que
+// analisa coerência entre carga e proteção.
+// ─────────────────────────────────────────────────────────────────
+function temContextoDeCarga(msg) {
+  return (
+    // Potência em W/kW/CV/HP/kVA
+    /\b\d+(?:[.,]\d+)?\s*(w|kw|cv|hp|kva|btu)\b/i.test(msg) ||
+    // Equipamentos comuns (sinal de pergunta com contexto, não dim simples)
+    /\b(chuveiro|motor|ar[\s-]?condicionado|split|forno|cooktop|aquecedor|geladeira|m[áa]quina\s+de\s+lavar|bomba|compressor|trafo|transformador|residen|comercial|industrial|quadro)\b/i.test(msg) ||
+    // Verbos que indicam validação ou dúvida (não dimensionamento direto)
+    /\b(posso\s+(usar|ligar|colocar|instalar)|consigo|d[áa]\s+(pra|para)|t[áa]\s+(certo|ok|errado)|[ée]\s+correto|funciona\s+pra)\b/i.test(msg)
+  );
+}
+
 function tentarCaboPorAmperes(msg) {
+  // Se tem contexto de carga, deixa pro LLM (mais seguro)
+  if (temContextoDeCarga(msg)) return null;
+
   const m = msg.match(/cabo\s+(?:p\/|para|de|pra)\s+(\d+(?:[.,]\d+)?)\s*a(?:mp[èeé]res?)?\b/i);
   if (!m) return null;
   const ib = parseFloat(m[1].replace(',', '.'));
@@ -346,6 +375,9 @@ function tentarTrafoCabo(msg) {
 //   "cabos 120mm² em paralelo pra 400a"
 // ─────────────────────────────────────────────────────────────────
 function tentarCabosBitolaQtd(msg) {
+  // Mesma guarda dos outros bypasses: contexto de carga → LLM
+  if (temContextoDeCarga(msg)) return null;
+
   const m = msg.match(/(?:quantos\s+)?cabos?\s+(?:de\s+)?(\d+(?:[.,]\d+)?)\s*mm[²2]?[\s\S]{0,30}?(?:p\/|pra|para)\s+(\d+(?:[.,]\d+)?)\s*a(?:mp[èeé]res?)?\b/i);
   if (!m) return null;
   const bitola = parseFloat(m[1].replace(',', '.'));
@@ -402,6 +434,11 @@ Base: NBR 14039 (média tensão) ou NBR 5410 §6.2.6.4.`;
 }
 
 function tentarDisjuntorPorAmperes(msg) {
+  // Se tem contexto de carga, NÃO dispara bypass — vai pro LLM analisar
+  // coerência (ex: "disjuntor 10A pra chuveiro 7000W" → LLM nota que
+  // 7000W/127V = 55A e que disjuntor de 10A é insuficiente/perigoso).
+  if (temContextoDeCarga(msg)) return null;
+
   const m = msg.match(/disjuntor\s+(?:p\/|para|pra|de)\s+(\d+(?:[.,]\d+)?)\s*a(?:mp[èeé]res?)?\b/i);
   if (!m) return null;
   const ib = parseFloat(m[1].replace(',', '.'));
