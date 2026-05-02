@@ -877,7 +877,10 @@ export default async function handler(req, res) {
         const msgFallback = eTimeout
           ? `⏱️ *Tô levando mais que o normal pra responder essa.*
 
-Pode tentar de novo? Se preferir, simplifique a pergunta — ex: "calcula motor 10cv 220v" em vez de descrever cenários múltiplos.`
+Pode tentar de novo? Se preferir, divida em partes:
+• 1 cálculo por vez (ex: "calcula motor 10cv 220v")
+• Pergunte primeiro o que quer (cabo? disjuntor? quadro?)
+• Mande dados objetivos (tensão, potência, área)`
           : `😬 *Tive um problema técnico aqui.*
 
 Pode tentar de novo daqui um minuto? Se persistir, me avisa que apuro.`;
