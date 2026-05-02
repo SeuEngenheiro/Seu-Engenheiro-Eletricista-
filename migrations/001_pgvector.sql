@@ -86,8 +86,12 @@ $$;
 -- ═══════════════════════════════════════════════════════════════
 -- 5) RPC: busca cache semântico (threshold alto = quase idêntico)
 -- ═══════════════════════════════════════════════════════════════
-CREATE OR REPLACE FUNCTION match_semantic_cache(
-  query_embedding VECTOR(1536),
+-- Parâmetro nomeado p_query_embedding (não query_embedding) pra evitar
+-- ambiguidade com a coluna semantic_cache.query_embedding (PG 17 strict).
+DROP FUNCTION IF EXISTS match_semantic_cache(VECTOR(1536), FLOAT);
+
+CREATE FUNCTION match_semantic_cache(
+  p_query_embedding VECTOR(1536),
   match_threshold FLOAT DEFAULT 0.95
 )
 RETURNS TABLE (
@@ -102,12 +106,12 @@ BEGIN
   SELECT
     sc.id,
     sc.resposta,
-    1 - (sc.query_embedding <=> query_embedding) AS similarity
+    (1 - (sc.query_embedding <=> p_query_embedding))::FLOAT AS similarity
   FROM semantic_cache sc
   WHERE
     sc.expira_em > NOW()
-    AND 1 - (sc.query_embedding <=> query_embedding) > match_threshold
-  ORDER BY sc.query_embedding <=> query_embedding
+    AND (1 - (sc.query_embedding <=> p_query_embedding)) > match_threshold
+  ORDER BY sc.query_embedding <=> p_query_embedding
   LIMIT 1;
 END;
 $$;
