@@ -258,19 +258,21 @@ function fmt(n, casas = null) {
  *   com bypasses simples (cabo pra X A).
  */
 function dimensionarCabo(ib, ctxTrafo = null) {
+  // Sufixo da resposta direta — quando o IB foi calculado a partir de
+  // dados do trafo (kVA, V), inclui esses dados + IB calculado entre
+  // parênteses. Quando IB já vem da pergunta (ex: "cabo pra 250 A"),
+  // só completa "atende X A".
+  // NÃO mostra a fórmula passo a passo: usuário pediu "qual cabo",
+  // não "como calcular". Fórmula só sob pedido explícito (LLM).
   const sufixoTrafo = ctxTrafo
     ? ` para um trafo de ${fmt(ctxTrafo.kva)} kVA / ${fmt(ctxTrafo.v)} V trifásico (IB ≈ ${fmt(ib)} A)`
     : ` atende ${fmt(ib)} A`;
-
-  const linhaCalculoIB = ctxTrafo
-    ? `*IB:* ${fmt(ib)} A — IB = S / (√3·V) = ${fmt(ctxTrafo.kva * 1000)} / (√3·${fmt(ctxTrafo.v)})\n`
-    : '';
 
   // ── Caso 1: até 300 mm² (cabo único) ──────────────────────────
   const escolha = TABELA_CABO.find(([_, cap]) => cap >= ib);
   if (escolha) {
     let r = `Cabo de *${fmt(escolha[0])} mm²*${sufixoTrafo}.`;
-    r += `\n\n${linhaCalculoIB}*Capacidade:* ${fmt(escolha[1])} A (Tabela 36)\n*Material:* cobre, PVC 70°C\n*Instalação:* método B1, 30°C`;
+    r += `\n\n*Capacidade:* ${fmt(escolha[1])} A (Tabela 36)\n*Material:* cobre, PVC 70°C\n*Instalação:* método B1, 30°C`;
     r += `\n\nPara 90°C (EPR/XLPE) ou outros métodos, aplicar fatores de correção.`;
     if (ib > 50) r += `\n\n⚠️ Verificar queda de tensão se circuito >30 m.`;
     r += `\n\nBase: NBR 5410 Tabela 36.`;
@@ -286,7 +288,7 @@ function dimensionarCabo(ib, ctxTrafo = null) {
         ? ` para um trafo de ${fmt(ctxTrafo.kva)} kVA / ${fmt(ctxTrafo.v)} V trifásico (IB ≈ ${fmt(ib)} A)`
         : ` atendem ${fmt(ib)} A`;
       let r = `*${n} cabos × 300 mm²* em paralelo por fase${sufixo}.`;
-      r += `\n\n${linhaCalculoIB}*Capacidade total:* ≈ ${fmt(Math.round(capTotal))} A (${IZ_300_MM2} × ${n} × ${fmt(fator, 2)})\n*Cabo terra (PE):* ${n}× ou proporcional\n*Cabo neutro:* fase ÷ 2 se trifásico balanceado\n*Disjuntor:* compatível com ${fmt(ib)} A total`;
+      r += `\n\n*Capacidade total:* ≈ ${fmt(Math.round(capTotal))} A (${IZ_300_MM2} × ${n} × ${fmt(fator, 2)})\n*Cabo terra (PE):* ${n}× ou proporcional\n*Cabo neutro:* fase ÷ 2 se trifásico balanceado\n*Disjuntor:* compatível com ${fmt(ib)} A total`;
       r += `\n\nBitolas acima de 300 mm² não são comerciais no Brasil. A solução é dividir a corrente em N condutores idênticos por fase.`;
       r += `\n\n⚠️ Cabos em paralelo exigem mesmo material, seção, comprimento e conexões em ambas extremidades.`;
       r += `\n\nBase: NBR 5410 §6.2.6.4 (paralelos) e Tabela 42 (agrupamento).`;
@@ -299,7 +301,7 @@ function dimensionarCabo(ib, ctxTrafo = null) {
     ? ` (trafo de ${fmt(ctxTrafo.kva)} kVA / ${fmt(ctxTrafo.v)} V → IB ≈ ${fmt(ib)} A)`
     : '';
   let r = `⚠️ Corrente de ${fmt(ib)} A${sufixoExcesso} excede o limite prático com cabos em paralelo.`;
-  r += `\n\n${linhaCalculoIB}*Limite com 6 × 300 mm²:* ≈ ${fmt(Math.round(IZ_300_MM2 * 6 * FATOR_AGRUP[6]))} A`;
+  r += `\n\n*Limite com 6 × 300 mm²:* ≈ ${fmt(Math.round(IZ_300_MM2 * 6 * FATOR_AGRUP[6]))} A`;
   r += `\n\nMesmo 6 cabos × 300 mm² em paralelo ficam no limite.`;
   r += `\n\nAlternativas:\n- Barramento blindado (busway) — padrão para >2000 A\n- Subir tensão (380V → 13,8 kV) reduz corrente proporcionalmente\n- Dividir a alimentação em 2+ circuitos paralelos`;
   r += `\n\nProjeto desse porte exige Engenheiro Eletricista com ART.`;
