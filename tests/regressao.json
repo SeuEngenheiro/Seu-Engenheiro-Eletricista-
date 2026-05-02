@@ -1,0 +1,275 @@
+{
+  "_meta": {
+    "criado_em": "2026-05-02",
+    "descricao": "Suíte de regressão — 30 casos cobrindo bypasses, conceitos, dados faltantes e LLM",
+    "tipos": {
+      "bypass": "Roda offline (sem OpenAI). Testa funções determinísticas.",
+      "llm": "Chama OpenAI real. Custa ~R$0,005 por caso. Use --llm pra incluir.",
+      "dados_faltantes": "Roda offline. Testa detector de dados incompletos."
+    }
+  },
+
+  "casos": [
+    {
+      "id": 1,
+      "categoria": "saudacao",
+      "tipo": "bypass",
+      "pergunta": "oi",
+      "deve_conter": ["SEU ENGENHEIRO AI", "Plano Gratuito"],
+      "nao_deve_conter": ["👷‍♂️⚡"]
+    },
+    {
+      "id": 2,
+      "categoria": "saudacao",
+      "tipo": "bypass",
+      "pergunta": "bom dia",
+      "deve_conter": ["Bom dia", "SEU ENGENHEIRO AI"],
+      "nao_deve_conter": ["👷‍♂️⚡", "Olá!"]
+    },
+    {
+      "id": 3,
+      "categoria": "saudacao",
+      "tipo": "bypass",
+      "pergunta": "boa noite",
+      "deve_conter": ["Boa noite", "SEU ENGENHEIRO AI"],
+      "nao_deve_conter": ["👷‍♂️⚡"]
+    },
+
+    {
+      "id": 4,
+      "categoria": "agradecimento",
+      "tipo": "bypass",
+      "pergunta": "obrigado",
+      "deve_conter": ["Por nada"],
+      "nao_deve_conter": ["IB", "mm²"]
+    },
+
+    {
+      "id": 5,
+      "categoria": "conceito_DR",
+      "tipo": "bypass",
+      "pergunta": "o que é DR",
+      "deve_conter": ["DR", "Diferencial Residual", "30 mA", "Base: NBR 5410"],
+      "nao_deve_conter": ["✅ Resposta direta", "🛠️ Justificativa", "📋 Norma", "Caso queira mais detalhes", "🟢", "🔵 *DR"]
+    },
+    {
+      "id": 6,
+      "categoria": "conceito_DPS",
+      "tipo": "bypass",
+      "pergunta": "o que é DPS",
+      "deve_conter": ["DPS", "surto", "Classe", "Base: NBR 5410"],
+      "nao_deve_conter": ["✅ Resposta direta", "🛠️ Justificativa", "📋 Norma", "Caso queira mais detalhes"]
+    },
+    {
+      "id": 7,
+      "categoria": "conceito_disjuntor",
+      "tipo": "bypass",
+      "pergunta": "o que é um disjuntor",
+      "deve_conter": ["disjuntor", "sobrecarga", "curto", "Base: NBR 5410"],
+      "nao_deve_conter": ["✅ Resposta direta", "🛠️ Justificativa", "📋 Norma", "Caso queira mais detalhes"]
+    },
+    {
+      "id": 8,
+      "categoria": "conceito_dr_vs_disj",
+      "tipo": "bypass",
+      "pergunta": "diferença entre DR e disjuntor",
+      "deve_conter": ["FIOS", "PESSOAS", "complementares", "Base: NBR 5410"],
+      "nao_deve_conter": ["✅ Resposta direta", "📋 Norma", "Caso queira mais detalhes"]
+    },
+    {
+      "id": 9,
+      "categoria": "conceito_tensao_BR",
+      "tipo": "bypass",
+      "pergunta": "qual a tensão padrão no Brasil",
+      "deve_conter": ["127 V", "220 V", "Base: NBR"],
+      "nao_deve_conter": ["✅ Resposta direta", "📋 Norma", "💡 Dica"]
+    },
+
+    {
+      "id": 10,
+      "categoria": "bypass_cabo_simples",
+      "tipo": "bypass",
+      "pergunta": "cabo pra 30A",
+      "deve_conter": ["4 mm²", "Capacidade", "32 A", "Base: NBR 5410"],
+      "nao_deve_conter": ["AWG", "🟢 Título", "⚡ *Resultado", "Caso queira mais detalhes"],
+      "bitola_esperada": "4 mm²"
+    },
+    {
+      "id": 11,
+      "categoria": "bypass_cabo_simples",
+      "tipo": "bypass",
+      "pergunta": "cabo pra 100A",
+      "deve_conter": ["25 mm²", "101 A", "Base: NBR 5410"],
+      "nao_deve_conter": ["AWG", "400 mm²", "500 mm²", "🟢 Título"],
+      "bitola_esperada": "25 mm²"
+    },
+    {
+      "id": 12,
+      "categoria": "bypass_cabo_paralelo",
+      "tipo": "bypass",
+      "pergunta": "cabo pra 600A",
+      "deve_conter": ["2 cabos", "300 mm²", "paralelo", "0,80", "Base: NBR 5410"],
+      "nao_deve_conter": ["AWG", "400 mm²", "500 mm²"],
+      "bitola_esperada": "300 mm²"
+    },
+    {
+      "id": 13,
+      "categoria": "bypass_cabo_excesso",
+      "tipo": "bypass",
+      "pergunta": "cabo pra 2500A",
+      "deve_conter": ["⚠️", "barramento", "busway", "Base: NBR"],
+      "nao_deve_conter": ["1 cabo", "2 cabos × 300", "AWG"]
+    },
+
+    {
+      "id": 14,
+      "categoria": "bypass_disjuntor",
+      "tipo": "bypass",
+      "pergunta": "disjuntor pra 27A",
+      "deve_conter": ["32 A", "Curva C", "IB ≤ IN ≤ IZ", "Base: NBR 5410"],
+      "nao_deve_conter": ["33 A", "30 A", "Caso queira mais detalhes"]
+    },
+    {
+      "id": 15,
+      "categoria": "bypass_disjuntor",
+      "tipo": "bypass",
+      "pergunta": "disjuntor pra 100A",
+      "deve_conter": ["100 A", "Base: NBR 5410"],
+      "nao_deve_conter": ["AWG", "Caso queira mais detalhes"]
+    },
+
+    {
+      "id": 16,
+      "categoria": "bypass_trafo",
+      "tipo": "bypass",
+      "pergunta": "cabo pra trafo 75 kVA 220V",
+      "deve_conter": ["95 mm²", "75 kVA", "220 V", "IB ≈"],
+      "nao_deve_conter": ["IB = S /", "300000", "Caso queira mais detalhes"],
+      "ib_esperado_min": 190,
+      "ib_esperado_max": 205
+    },
+    {
+      "id": 17,
+      "categoria": "bypass_trafo_paralelo",
+      "tipo": "bypass",
+      "pergunta": "cabo pra trafo 500 kVA 380V",
+      "deve_conter": ["300 mm²", "paralelo", "500 kVA", "380 V", "0,80"],
+      "nao_deve_conter": ["AWG", "400 mm²", "Caso queira mais detalhes"],
+      "ib_esperado_min": 750,
+      "ib_esperado_max": 770
+    },
+    {
+      "id": 18,
+      "categoria": "bypass_trafo_excesso",
+      "tipo": "bypass",
+      "pergunta": "cabo pra trafo 1500 kVA 380V",
+      "deve_conter": ["⚠️", "barramento", "busway", "1500 kVA"],
+      "nao_deve_conter": ["1 cabo de", "AWG"],
+      "ib_esperado_min": 2270,
+      "ib_esperado_max": 2290
+    },
+
+    {
+      "id": 19,
+      "categoria": "bypass_cabos_bitola_paralelo",
+      "tipo": "bypass",
+      "pergunta": "quantos cabos 240 mm² pra 759 A",
+      "deve_conter": ["3 cabos", "240 mm²", "paralelo", "0,70", "Base: NBR 5410"],
+      "nao_deve_conter": ["2 cabos", "AWG"]
+    },
+    {
+      "id": 20,
+      "categoria": "bypass_cabos_bitola_simples",
+      "tipo": "bypass",
+      "pergunta": "quantos cabos 95 mm² pra 200 A",
+      "deve_conter": ["1 cabo", "95 mm²", "232 A", "Base: NBR 5410"],
+      "nao_deve_conter": ["AWG", "2 cabos ×", "3 cabos ×"]
+    },
+
+    {
+      "id": 21,
+      "categoria": "dados_faltantes_cabo",
+      "tipo": "dados_faltantes",
+      "pergunta": "qual cabo pra meu chuveiro",
+      "deve_conter": ["Dimensionamento de cabo", "Potência", "Tensão", "Comprimento", "NBR 5410"],
+      "nao_deve_conter": ["mm²", "Disjuntor"]
+    },
+    {
+      "id": 22,
+      "categoria": "dados_faltantes_disjuntor",
+      "tipo": "dados_faltantes",
+      "pergunta": "que disjuntor uso na minha casa",
+      "deve_conter": ["Dimensionamento de disjuntor", "Potência", "Tensão", "IB ≤ IN ≤ IZ"],
+      "nao_deve_conter": ["Cabo de", "Disjuntor de"]
+    },
+    {
+      "id": 23,
+      "categoria": "dados_faltantes_motor",
+      "tipo": "dados_faltantes",
+      "pergunta": "calcula motor 50cv",
+      "deve_conter": ["Dimensionamento de motor", "Tensão", "partida", "η", "cosφ"],
+      "nao_deve_conter": ["mm²", "32 A"]
+    },
+
+    {
+      "id": 24,
+      "categoria": "llm_calculo_motor",
+      "tipo": "llm",
+      "pergunta": "calcula motor 10cv 220v tri",
+      "deve_conter": ["27 A", "6 mm²", "32", "Base: NBR 5410"],
+      "nao_deve_conter": ["AWG", "400 mm²", "🟢 *Título", "📐 *Contexto", "🧮 *Fórmula", "📊 *Cálculo", "✅ *Resposta direta", "🛠️ *Justificativa", "📋 *Norma", "Caso queira mais detalhes"],
+      "ib_esperado_min": 22,
+      "ib_esperado_max": 30
+    },
+    {
+      "id": 25,
+      "categoria": "llm_calculo_chuveiro",
+      "tipo": "llm",
+      "pergunta": "qual disjuntor uso pra um chuveiro 7500W em 220V",
+      "deve_conter": ["40 A", "Base: NBR"],
+      "nao_deve_conter": ["AWG", "🟢 *Título", "📐 *Contexto", "🧮 *Fórmula", "📊 *Cálculo", "Caso queira mais detalhes"]
+    },
+    {
+      "id": 26,
+      "categoria": "llm_calculo_residencial",
+      "tipo": "llm",
+      "pergunta": "Tenho uma casa de 200m² com 4 quartos, sala, cozinha, 2 banheiros. Preciso dimensionar o quadro elétrico. Tensão 220V monofásica.",
+      "deve_conter": ["circuito", "NBR 5410"],
+      "nao_deve_conter": ["AWG", "400 mm²", "🟢 *Título", "📐 *Contexto", "Caso queira mais detalhes"]
+    },
+    {
+      "id": 27,
+      "categoria": "llm_conceito",
+      "tipo": "llm",
+      "pergunta": "qual a diferença entre as curvas B C e D de disjuntor",
+      "deve_conter": ["Curva B", "Curva C", "Curva D", "IN"],
+      "nao_deve_conter": ["AWG", "Caso queira mais detalhes", "🟢 *Título"]
+    },
+    {
+      "id": 28,
+      "categoria": "llm_risco",
+      "tipo": "llm",
+      "pergunta": "posso emendar o fio do chuveiro com fita isolante?",
+      "deve_conter": ["Não", "Wago"],
+      "nao_deve_conter": ["Sim, pode emendar", "É seguro", "Caso queira mais detalhes"]
+    },
+
+    {
+      "id": 29,
+      "categoria": "bypass_conversao",
+      "tipo": "bypass",
+      "pergunta": "10 cv em kw",
+      "deve_conter": ["7,36 kW", "0,736"],
+      "nao_deve_conter": ["AWG"]
+    },
+
+    {
+      "id": 30,
+      "categoria": "llm_norma_segura",
+      "tipo": "llm",
+      "pergunta": "como dimensionar circuito de tomadas TUG numa cozinha residencial",
+      "deve_conter": ["TUG", "NBR 5410"],
+      "nao_deve_conter": ["AWG", "🟢 *Título", "Caso queira mais detalhes"]
+    }
+  ]
+}

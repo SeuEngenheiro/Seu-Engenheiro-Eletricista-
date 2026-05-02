@@ -402,7 +402,7 @@ Base: NBR 14039 (média tensão) ou NBR 5410 §6.2.6.4.`;
 }
 
 function tentarDisjuntorPorAmperes(msg) {
-  const m = msg.match(/disjuntor\s+(?:p\/|para|de)\s+(\d+(?:[.,]\d+)?)\s*a(?:mp[èeé]res?)?\b/i);
+  const m = msg.match(/disjuntor\s+(?:p\/|para|pra|de)\s+(\d+(?:[.,]\d+)?)\s*a(?:mp[èeé]res?)?\b/i);
   if (!m) return null;
   const ib = parseFloat(m[1].replace(',', '.'));
   const escolha = DISJUNTORES_COMERCIAIS.find(c => c >= ib);
@@ -420,41 +420,41 @@ Base: NBR 5410.`;
 
 // Conversões simples — bypassa LLM pra resposta instantânea e exata
 function tentarConversao(msg) {
-  // CV → kW: "10 cv em/para kw"
+  // CV → kW
   let m = msg.match(/(\d+(?:[.,]\d+)?)\s*cv\s+(em|para|para\s+converter|=>?)\s*kw/i);
   if (m) {
     const v = parseFloat(m[1].replace(',', '.'));
-    return `✅ ${v} CV = ${(v * 0.736).toFixed(2)} kW (× 0,736)`;
+    return `✅ ${fmt(v)} CV = ${fmt(v * 0.736, 2)} kW (× 0,736)`;
   }
   // kW → CV
   m = msg.match(/(\d+(?:[.,]\d+)?)\s*kw\s+(em|para|=>?)\s*cv/i);
   if (m) {
     const v = parseFloat(m[1].replace(',', '.'));
-    return `✅ ${v} kW = ${(v / 0.736).toFixed(2)} CV (÷ 0,736)`;
+    return `✅ ${fmt(v)} kW = ${fmt(v / 0.736, 2)} CV (÷ 0,736)`;
   }
   // HP → CV
   m = msg.match(/(\d+(?:[.,]\d+)?)\s*hp\s+(em|para|=>?)\s*cv/i);
   if (m) {
     const v = parseFloat(m[1].replace(',', '.'));
-    return `✅ ${v} HP = ${(v * 1.0139).toFixed(2)} CV (× 1,0139)`;
+    return `✅ ${fmt(v)} HP = ${fmt(v * 1.0139, 2)} CV (× 1,0139)`;
   }
   // CV → HP
   m = msg.match(/(\d+(?:[.,]\d+)?)\s*cv\s+(em|para|=>?)\s*hp/i);
   if (m) {
     const v = parseFloat(m[1].replace(',', '.'));
-    return `✅ ${v} CV = ${(v * 0.9863).toFixed(2)} HP (× 0,9863)`;
+    return `✅ ${fmt(v)} CV = ${fmt(v * 0.9863, 2)} HP (× 0,9863)`;
   }
   // kW → HP
   m = msg.match(/(\d+(?:[.,]\d+)?)\s*kw\s+(em|para|=>?)\s*hp/i);
   if (m) {
     const v = parseFloat(m[1].replace(',', '.'));
-    return `✅ ${v} kW = ${(v * 1.341).toFixed(2)} HP (× 1,341)`;
+    return `✅ ${fmt(v)} kW = ${fmt(v * 1.341, 2)} HP (× 1,341)`;
   }
   // HP → kW
   m = msg.match(/(\d+(?:[.,]\d+)?)\s*hp\s+(em|para|=>?)\s*kw/i);
   if (m) {
     const v = parseFloat(m[1].replace(',', '.'));
-    return `✅ ${v} HP = ${(v * 0.7457).toFixed(2)} kW (× 0,7457)`;
+    return `✅ ${fmt(v)} HP = ${fmt(v * 0.7457, 2)} kW (× 0,7457)`;
   }
   return null;
 }
@@ -495,6 +495,30 @@ function msgLimitePerguntas() {
 }
 const MSG_NORMA_BLOQUEADA = `📋 Outras normas disponíveis nos planos *PROFISSIONAL* e *PREMIUM*.\n\nNo grátis: *NBR 5410* incluída.\n\n🔵 PROFISSIONAL: https://pay.kiwify.com.br/mVAGqLU\n🔴 PREMIUM: https://pay.kiwify.com.br/Mns2lfH`;
 const MSG_PLANOS = `📊 *Planos — Seu Engenheiro AI*\n\n━━━━━━━━━━━━━━━━━━━━━━━━\n🟢 *Plano Gratuito — R$ 0*\n• 20 perguntas / mês\n• Resposta técnica padrão (modo curto)\n• Direcionamento conforme NBR 5410\n\nIndicado pra dúvidas simples e consultas rápidas.\n\n━━━━━━━━━━━━━━━━━━━━━━━━\n🔵 *Plano Profissional — R$ 24,99/mês*\n• Perguntas ilimitadas\n• Cálculos ilimitados\n• Dimensionamento detalhado\n• Lista de materiais (SEM PREÇOS)\n• Especificação técnica de materiais\n\nIndicado pra quem executa serviços.\n\n👉 https://pay.kiwify.com.br/mVAGqLU\n\n━━━━━━━━━━━━━━━━━━━━━━━━\n🔴 *Plano Premium — R$ 49,99/mês*\n• Tudo do Profissional\n• 💰 Lista de materiais (COM PREÇOS)\n• 📷 Análise de fotos ilimitada\n• 📜 Histórico completo acessível\n• 🏗️ Análise de projeto (fotos + planta)\n\nIndicado pra uso profissional e projetos.\n\n👉 https://pay.kiwify.com.br/Mns2lfH\n\n*✅ Pronto pra começar? Assine um plano agora.*`;
+
+// ═══════════════════════════════════════════════════════════════
+// EXPORTS — funções e constantes expostas para a suíte de testes
+// (scripts/run-regression.js). Não afetam o handler default — Vercel
+// continua chamando o `export default async function handler`.
+// ═══════════════════════════════════════════════════════════════
+export {
+  // Detectores
+  isOla, obterSaudacao, ehCalculo, ehPerguntaTecnica, ehConversao,
+  ehMaterial, ehOutraNorma, ehAgradecimento,
+  ehPerguntaDR, ehPerguntaDPS, ehPerguntaDisjuntor, ehDiferencaDR,
+  ehPerguntaTensaoBR, ehPlanoAtual,
+  // Bypasses paramétricos
+  tentarCaboPorAmperes, tentarTrafoCabo, tentarCabosBitolaQtd,
+  tentarDisjuntorPorAmperes, tentarConversao,
+  dimensionarCabo,
+  // Conceitos fixos (constantes)
+  RESP_DR, RESP_DPS, RESP_DISJUNTOR, RESP_DIF_DR_DISJ, RESP_TENSAO_BR,
+  MSG_AGRADECIMENTO,
+  // Mensagens-builder
+  montarBoasVindas, montarPlanoAtual,
+  // Helper
+  fmt,
+};
 
 // ═══════════════════════════════════════════════════════════════
 // HANDLER PRINCIPAL — processa SINCRONICAMENTE com await
