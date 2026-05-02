@@ -251,21 +251,17 @@ const DISJUNTORES_COMERCIAIS = [6, 10, 16, 20, 25, 32, 40, 50, 63, 80, 100, 125,
 // tentarDisjuntorPorAmperesQtdCabos. Garante consistência total.
 // ─────────────────────────────────────────────────────────────────
 
-function dimensionarCabo(ib, titulo, contextoExtra = '') {
+function dimensionarCabo(ib, contextoIB = '') {
   // ── Caso 1: até 300 mm² (cabo único) ──────────────────────────
   const escolha = TABELA_CABO.find(([_, cap]) => cap >= ib);
   if (escolha) {
-    return `*${titulo}*${contextoExtra}
-
-⚡ *Resultado*
-Cabo *${escolha[0]} mm²* (capacidade ${escolha[1]} A — NBR 5410 Tabela 36)
-
-📌 *Obs.:* cobre, PVC 70°C, método B1 (eletroduto embutido), 30°C.
-Para 90°C (EPR/XLPE) ou outros métodos, aplicar fatores.
-
-⚠️ Verificar queda de tensão se distância >30 m.
-
-*Caso queira mais detalhes, é só pedir.*`;
+    // Formato 5 blocos: resposta direta + dados + contexto + norma
+    let r = `Cabo de *${escolha[0]} mm²* atende ${ib} A.`;
+    if (contextoIB) r = `${contextoIB}${r}`;
+    r += `\n\n*Capacidade:* ${escolha[1]} A (Tabela 36)\n*Material:* cobre, PVC 70°C\n*Instalação:* método B1, 30°C\n\nPara 90°C (EPR/XLPE) ou outros métodos, aplicar fatores de correção.`;
+    if (ib > 50) r += `\n\n⚠️ Verificar queda de tensão se circuito >30 m.`;
+    r += `\n\nBase: NBR 5410 Tabela 36.`;
+    return r;
   }
 
   // ── Caso 2: > 300 mm² → cabos em paralelo (NBR §6.2.6.4) ──────
@@ -273,48 +269,24 @@ Para 90°C (EPR/XLPE) ou outros métodos, aplicar fatores.
     const fator = FATOR_AGRUP[n];
     const capTotal = IZ_300_MM2 * n * fator;
     if (capTotal >= ib) {
-      return `*${titulo}*${contextoExtra}
-
-⚡ *Resultado*
-*${n} cabos × 300 mm² em paralelo por fase*
-Capacidade total ≈ ${Math.round(capTotal)} A
-(${IZ_300_MM2} A × ${n} × ${fator} de agrupamento)
-
-📌 *Por que paralelo?*
-Bitolas acima de 300 mm² não são comerciais no Brasil.
-NBR 5410 §6.2.6.4 permite cabos em paralelo, desde que:
-• Mesmo material (Cu)
-• Mesma seção (300 mm²)
-• Mesmo comprimento e roteamento
-• Mesmas conexões em ambas extremidades
-
-🔧 *Atenção pro projeto*
-• Cabo terra (PE) também ${n}× ou bitola maior proporcional
-• Cabo neutro: trifásico balanceado pode ser N = ½ fase
-• Disjuntor compatível com a corrente total (${ib} A)
-• Validar com Engenheiro Eletricista (ART) — cabos em paralelo
-  exigem cuidado extra na conexão (terminais, lugs, torques).
-
-*Caso queira mais detalhes, é só pedir.*`;
+      let r = `*${n} cabos × 300 mm²* em paralelo por fase atendem ${ib} A.`;
+      if (contextoIB) r = `${contextoIB}${r}`;
+      r += `\n\n*Capacidade total:* ≈ ${Math.round(capTotal)} A (${IZ_300_MM2} × ${n} × ${fator})\n*Cabo terra (PE):* ${n}× ou proporcional\n*Cabo neutro:* fase ÷ 2 se trifásico balanceado\n*Disjuntor:* compatível com ${ib} A total`;
+      r += `\n\nBitolas acima de 300 mm² não são comerciais no Brasil. A solução é dividir a corrente em N condutores idênticos por fase.`;
+      r += `\n\n⚠️ Cabos em paralelo exigem mesmo material, seção, comprimento e conexões em ambas extremidades.`;
+      r += `\n\nBase: NBR 5410 §6.2.6.4 (paralelos) e Tabela 42 (agrupamento).`;
+      return r;
     }
   }
 
   // ── Caso 3: > 6 cabos = revisar projeto ───────────────────────
-  return `*${titulo}*${contextoExtra}
-
-⚠️ *Corrente muito elevada (>${Math.round(IZ_300_MM2 * 6 * FATOR_AGRUP[6])} A)*
-
-Mesmo com 6 cabos × 300 mm² em paralelo, a capacidade fica no
-limite. Recomenda-se:
-• *Barramento blindado* (busway) — padrão p/ correntes >2000 A
-• *Subir a tensão* (380 V → 13,8 kV) reduz corrente proporcionalmente
-• *Dividir a alimentação* em 2+ circuitos paralelos
-
-📋 *Norma*
-NBR 14039 (média tensão) ou NBR 5410 §6.2.6.4 (paralelos).
-Projeto desse porte exige Engenheiro Eletricista com ART.
-
-*Caso queira mais detalhes, é só pedir.*`;
+  let r = `⚠️ Corrente de ${ib} A excede o limite prático com cabos em paralelo.`;
+  if (contextoIB) r = `${contextoIB}${r}`;
+  r += `\n\nMesmo 6 cabos × 300 mm² em paralelo (capacidade ≈ ${Math.round(IZ_300_MM2 * 6 * FATOR_AGRUP[6])} A) ficam no limite.`;
+  r += `\n\nAlternativas:\n- Barramento blindado (busway) — padrão para >2000 A\n- Subir tensão (380V → 13,8 kV) reduz corrente proporcionalmente\n- Dividir a alimentação em 2+ circuitos paralelos`;
+  r += `\n\nProjeto desse porte exige Engenheiro Eletricista com ART.`;
+  r += `\n\nBase: NBR 14039 (média tensão) ou NBR 5410 §6.2.6.4.`;
+  return r;
 }
 
 // ─────────────────────────────────────────────────────────────────
@@ -324,7 +296,7 @@ function tentarCaboPorAmperes(msg) {
   const m = msg.match(/cabo\s+(?:p\/|para|de|pra)\s+(\d+(?:[.,]\d+)?)\s*a(?:mp[èeé]res?)?\b/i);
   if (!m) return null;
   const ib = parseFloat(m[1].replace(',', '.'));
-  return dimensionarCabo(ib, `Cabo para ${ib} A`);
+  return dimensionarCabo(ib);
 }
 
 // ─────────────────────────────────────────────────────────────────
@@ -333,20 +305,16 @@ function tentarCaboPorAmperes(msg) {
 // IB = S(kVA) × 1000 / (√3 × V) — assume sempre trifásico (padrão BR)
 // ─────────────────────────────────────────────────────────────────
 function tentarTrafoCabo(msg) {
-  // Captura "trafo|transformador" + kVA + V (qualquer ordem entre, com palavras intermediárias)
-  // Ex: "cabo pra trafo 500 kva 380v secundário"
-  //     "transformador de 1000 kva em 380 v"
-  //     "qual cabo trafo 750kva 220v tri"
   const m = msg.match(/(?:trafo|transformador)[\s\S]{0,80}?(\d+(?:[.,]\d+)?)\s*kva[\s\S]{0,30}?(\d+(?:[.,]\d+)?)\s*v(?:olt)?/i);
   if (!m) return null;
   const kva = parseFloat(m[1].replace(',', '.'));
   const v = parseFloat(m[2].replace(',', '.'));
   if (kva <= 0 || v <= 0) return null;
   const ibCalc = (kva * 1000) / (Math.sqrt(3) * v);
-  const ib = Math.round(ibCalc * 10) / 10; // 1 casa decimal
-  const titulo = `Cabo p/ trafo ${kva} kVA — ${v} V trifásico`;
-  const contextoExtra = `\n\n📐 *Cálculo da corrente*\nIB = S / (√3 × V) = ${kva}.000 / (√3 × ${v}) ≈ *${ib} A*`;
-  return dimensionarCabo(ib, titulo, contextoExtra);
+  const ib = Math.round(ibCalc * 10) / 10;
+  // Bloco 1+2 do contexto: trafo + cálculo IB. dimensionarCabo continua a partir daqui.
+  const contextoIB = `Trafo de *${kva} kVA em ${v} V* trifásico puxa ≈ *${ib} A*.\n\nIB = S / (√3 × V) = ${kva * 1000} / (√3 × ${v})\n\n`;
+  return dimensionarCabo(ib, contextoIB);
 }
 
 // ─────────────────────────────────────────────────────────────────
@@ -369,15 +337,15 @@ function tentarCabosBitolaQtd(msg) {
 
   // Caso A: 1 cabo basta
   if (izUnit >= ib) {
-    return `*${bitola} mm² para ${ib} A*
+    return `*1 cabo de ${bitola} mm²* atende ${ib} A.
 
-⚡ *Resultado*
-*1 cabo de ${bitola} mm² é suficiente* — capacidade ${izUnit} A ≥ ${ib} A.
-Não precisa cabos em paralelo nesse caso.
+*Capacidade unitária:* ${izUnit} A (≥ ${ib} A)
+*Material:* cobre, PVC 70°C
+*Instalação:* método B1, 30°C
 
-📌 *Obs.:* assume PVC 70°C, B1, 30°C. Pra outras condições aplicar fatores.
+Não precisa cabos em paralelo nesse caso. Para outras condições (90°C, agrupamento), aplicar fatores.
 
-*Caso queira mais detalhes, é só pedir.*`;
+Base: NBR 5410 Tabela 36.`;
   }
 
   // Caso B: precisa N cabos em paralelo
@@ -385,48 +353,31 @@ Não precisa cabos em paralelo nesse caso.
     const fator = FATOR_AGRUP[n];
     const cap = izUnit * n * fator;
     if (cap >= ib) {
-      return `*${bitola} mm² para ${ib} A*
+      return `*${n} cabos × ${bitola} mm²* em paralelo atendem ${ib} A.
 
-⚡ *Resultado*
-*${n} cabos × ${bitola} mm² em paralelo por fase*
-Capacidade total ≈ ${Math.round(cap)} A
-(${izUnit} A × ${n} × ${fator} agrupamento)
+*Capacidade total:* ≈ ${Math.round(cap)} A (${izUnit} × ${n} × ${fator})
+*Fator de agrupamento:* ${fator} (${n} cabos no mesmo eletroduto)
+*Cabo terra (PE):* N× ou proporcional
 
-📌 *FATOR DE AGRUPAMENTO É OBRIGATÓRIO em paralelos*
-NBR 5410 Tabela 42. Sem o fator, há risco de superaquecimento
-e degradação da isolação. Fatores típicos no mesmo eletroduto:
-• 2 cabos: 0,80
-• 3 cabos: 0,70
-• 4 cabos: 0,65
-• 5 cabos: 0,60
-• 6 cabos: 0,57
+O fator de agrupamento é OBRIGATÓRIO em paralelos. Sem ele há risco de superaquecimento — capacidade real fica menor que ${izUnit} × ${n}.
 
-🔧 *Cabos em paralelo* (NBR §6.2.6.4):
-• Mesmo material, seção e comprimento
-• Mesma instalação e conexões
-• PE também N× ou proporcional
+⚠️ Cabos em paralelo exigem mesmo material, seção, comprimento e conexões em ambas extremidades.
 
-⚠️ Validar com Engenheiro Eletricista (ART).
-
-*Caso queira mais detalhes, é só pedir.*`;
+Base: NBR 5410 §6.2.6.4 e Tabela 42.`;
     }
   }
 
   // Caso C: nem 6 cabos da bitola escolhida bastam → sugerir subir bitola
-  return `*${bitola} mm² para ${ib} A*
+  return `⚠️ ${bitola} mm² não atende ${ib} A nem com 6 em paralelo.
 
-⚠️ *Não atende com até 6 cabos × ${bitola} mm² em paralelo*
+*Capacidade máxima possível:* ${Math.round(izUnit * 6 * FATOR_AGRUP[6])} A (< ${ib} A)
 
-Capacidade máxima possível: ${Math.round(izUnit * 6 * FATOR_AGRUP[6])} A < ${ib} A.
+Alternativas:
+- Subir bitola para *300 mm²* (maior comercial) e refazer o cálculo
+- Barramento blindado (busway)
+- Subir tensão (380 V → 13,8 kV) reduzindo corrente proporcionalmente
 
-Opções:
-• Subir bitola pra *300 mm²* (maior comercial) e refazer o cálculo
-• Barramento blindado (busway)
-• Subir tensão (380 V → 13,8 kV) — reduz corrente proporcionalmente
-
-📋 NBR 14039 (média tensão) ou Engenheiro Eletricista (ART).
-
-*Caso queira mais detalhes, é só pedir.*`;
+Base: NBR 14039 (média tensão) ou NBR 5410 §6.2.6.4.`;
 }
 
 function tentarDisjuntorPorAmperes(msg) {
@@ -435,18 +386,15 @@ function tentarDisjuntorPorAmperes(msg) {
   const ib = parseFloat(m[1].replace(',', '.'));
   const escolha = DISJUNTORES_COMERCIAIS.find(c => c >= ib);
   if (!escolha) return null;
-  return `*Disjuntor para ${ib} A*
+  return `Disjuntor de *${escolha} A* para ${ib} A nominais.
 
-⚡ *Resultado*
-Disjuntor *${escolha} A* (próximo valor comercial ≥ ${ib} A)
-
-📌 *Obs.:* regra NBR 5410 → IB ≤ IN ≤ IZ.
-- Curva C: cargas residenciais mistas (TUE, iluminação)
-- Curva D: motores ou cargas com partida elevada
+*Próximo comercial:* ${escolha} A (regra IB ≤ IN ≤ IZ)
+*Curva C:* cargas residenciais (TUE, iluminação)
+*Curva D:* motores ou cargas com partida elevada
 
 ⚠️ Conferir se o cabo aguenta o disjuntor (capacidade do cabo ≥ IN).
 
-*Caso queira mais detalhes, é só pedir.*`;
+Base: NBR 5410.`;
 }
 
 // Conversões simples — bypassa LLM pra resposta instantânea e exata
