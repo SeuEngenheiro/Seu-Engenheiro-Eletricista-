@@ -816,7 +816,31 @@ export default async function handler(req, res) {
     return res.status(200).json({ ok: true });
 
   } catch (err) {
-    console.error('[ERRO WEBHOOK]', err);
+    console.error(`[ERRO WEBHOOK ${Date.now() - tStart}ms]`, err?.message || err);
+
+    // Tenta avisar o usuário em vez de ficar em silêncio.
+    // Re-extrai telefone do body (não está no escopo do catch) e envia
+    // mensagem amigável dependendo do tipo de erro.
+    try {
+      const body = req.body || {};
+      const telefone = body.phone?.replace(/\D/g, '');
+      if (telefone && !body.fromMe && !body.isGroup) {
+        const eTimeout = /demorei demais|aborted|timeout/i.test(err?.message || '');
+        const msgFallback = eTimeout
+          ? `⏱️ *Tô levando mais que o normal pra responder essa.*
+
+Pode tentar de novo? Se preferir, simplifique a pergunta — ex: "calcula motor 10cv 220v" em vez de descrever cenários múltiplos.`
+          : `😬 *Tive um problema técnico aqui.*
+
+Pode tentar de novo daqui um minuto? Se persistir, me avisa que apuro.`;
+        await enviarMensagem(telefone, msgFallback);
+        // Não bloqueia em registrar — fire-and-forget
+        registrarConversa(telefone, msgFallback, 'agente').catch(() => {});
+      }
+    } catch (fallbackErr) {
+      console.error('[FALLBACK ERRO]', fallbackErr?.message);
+    }
+
     return res.status(200).json({ ok: false, error: err.message });
   }
 }
